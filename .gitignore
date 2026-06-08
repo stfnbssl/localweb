@@ -141,3 +141,9 @@ dist
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
 .vite/
+
+# Dati runtime del Research System (contenuti utente locali — non versionare)
+/data/research/
+server-dev.log
+client-dev.log
+/data/documents/

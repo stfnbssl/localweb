@@ -1,0 +1,21 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply font-serif antialiased bg-white text-neutral-900;
+  }
+  nav,
+  button,
+  input,
+  select,
+  textarea,
+  label,
+  [role='button'] {
+    @apply font-sans;
+  }
+  ::selection {
+    @apply bg-slate-200 text-neutral-900;
+  }
+}

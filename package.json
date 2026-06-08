@@ -1,0 +1,17 @@
+{
+  "name": "localweb",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Webapp locale per la gestione di file Markdown/JSON ed esecuzione di lavori via spawn su Claude Cowork e Claude Code.",
+  "workspaces": ["server", "client"],
+  "scripts": {
+    "dev": "concurrently -n server,client -c blue,green \"npm run dev --workspace=server\" \"npm run dev --workspace=client\"",
+    "dev:server": "npm run dev --workspace=server",
+    "dev:client": "npm run dev --workspace=client",
+    "build": "npm run build --workspace=server && npm run build --workspace=client",
+    "start": "npm run start --workspace=server"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.0"
+  }
+}
