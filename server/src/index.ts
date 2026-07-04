@@ -4,6 +4,7 @@ import './loadEnv';
 import express from 'express';
 import cors from 'cors';
 import researchRoutes from './routes/research';
+import youtubeRoutes from './routes/youtube';
 
 const app = express();
 const PORT = Number(process.env.PORT) || 4317;
@@ -52,6 +53,9 @@ app.get('/api/ping', (_req, res) => {
 // L'estrazione categorie avviene via spawn di Cowork (CLI `claude`), che usa
 // l'autenticazione di Claude Code: non serve ANTHROPIC_API_KEY.
 app.use('/api/research', researchRoutes);
+
+// YouTube — scarico transcript di un video da URL/ID.
+app.use('/api/youtube', youtubeRoutes);
 
 app.listen(PORT, () => {
   console.log(`localweb-server in ascolto su http://localhost:${PORT}`);
