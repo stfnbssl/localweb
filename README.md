@@ -4,6 +4,9 @@ Webapp **locale** (gira solo su questo computer): nessun controllo accessi, ness
 database cloud. Gestisce file locali in formato **Markdown** e **JSON** ed esegue
 lavori tramite *spawn* su **Claude Cowork** e **Claude Code**.
 
+📖 **[docs/README.md](docs/README.md)** — obiettivi del progetto e cosa fanno le
+singole sezioni (Research System, YouTube Transcript).
+
 ## Struttura
 
 ```
