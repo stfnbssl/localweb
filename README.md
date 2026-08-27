@@ -36,6 +36,7 @@ Poi apri http://localhost:5180 — la landing page esegue un **PING** all'endpoi
 | `npm run dev:server` | solo il server (nodemon)               |
 | `npm run dev:client` | solo il client (Vite)                  |
 | `npm run build`      | build di produzione di server e client |
+| `npm test`           | typecheck + test (vitest) del server    |
 
 ## Configurazione
 

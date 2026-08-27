@@ -35,7 +35,8 @@ export class WebSearch extends SearchEngine {
   }
 }
 
-function parseResults(text: string, max: number): RawResult[] {
+// Esportata per i test: è l'unico punto in cui entra testo generato da un modello.
+export function parseResults(text: string, max: number): RawResult[] {
   let cleaned = text.trim();
   const fence = cleaned.match(/```(?:json)?\s*([\s\S]*?)```/);
   if (fence) cleaned = fence[1].trim();

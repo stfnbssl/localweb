@@ -35,7 +35,8 @@ function parseLabels(raw: any): LocalizedLabel[] {
     .filter((l: LocalizedLabel) => l.text && l.lang);
 }
 
-function parseResult(text: string): ExtractedCategory[] {
+// Esportata per i test: è l'unico punto in cui entra testo generato da un modello.
+export function parseResult(text: string): ExtractedCategory[] {
   let cleaned = text.trim();
   const fence = cleaned.match(/```(?:json)?\s*([\s\S]*?)```/);
   if (fence) cleaned = fence[1].trim();

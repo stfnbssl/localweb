@@ -11,7 +11,9 @@
     "clean": "node -e \"require('fs').rmSync('dist', { recursive: true, force: true })\"",
     "prebuild": "npm run clean",
     "build": "tsc",
-    "start": "cross-env NODE_OPTIONS=--use-system-ca node dist/index.js"
+    "start": "cross-env NODE_OPTIONS=--use-system-ca node dist/index.js",
+    "test": "tsc -p tests && vitest run",
+    "test:watch": "vitest"
   },
   "dependencies": {
     "cors": "^2.8.5",
@@ -26,6 +28,7 @@
     "cross-env": "^7.0.3",
     "nodemon": "^3.1.4",
     "ts-node": "^10.9.2",
-    "typescript": "^5.5.0"
+    "typescript": "^5.5.0",
+    "vitest": "^4.1.11"
   }
 }

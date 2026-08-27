@@ -120,7 +120,7 @@ come tale costa più di uno assente, perché viene creduto.
 
 ---
 
-## 5. Nessun test, e ci sono due punti che li meritano
+## 5. Nessun test, e ci sono due punti che li meritano ✅ FATTO
 
 Non esiste alcun test nel repo, né uno script `test`. Non serve una suite: bastano
 due file su ciò che è **logica pura e fragile**.
@@ -141,6 +141,14 @@ perché entrambe le funzioni sono sincrone e pure.
 
 **Costo:** ~1 ora. **Valore:** alto in prospettiva — sono i due punti dove una
 regressione passerebbe inosservata.
+
+> **Risolto.** `vitest` nel workspace `server`, 26 test in `server/tests/`
+> (`queryBuilder.test.ts` e `parsers.test.ts`), nessun mock e nessuna rete. I due
+> parser sono stati esportati per renderli testabili. I test stanno **fuori** da
+> `src/` perché `tsconfig.json` compila tutto `src/**` dentro `dist/`; li
+> typechecka `tests/tsconfig.json`, agganciato allo script (`tsc -p tests &&
+> vitest run`) perché vitest da solo non verifica i tipi. Si lanciano con
+> `npm test` dalla root.
 
 ---
 
@@ -236,4 +244,5 @@ attuale:
 
 Insieme: meno di un'ora.
 
-Tutti e tre applicati; i punti **4-9 restano aperti**.
+Tutti e tre applicati, più il punto **5** (test con vitest).
+Restano aperti i punti **4, 6, 7, 8, 9**.
