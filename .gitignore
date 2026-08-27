@@ -151,3 +151,5 @@ vite.config.ts.timestamp-*
 server-dev.log
 client-dev.log
 /data/documents/
+# Note esportate dall'utente: restano locali (il .gitkeep tiene viva la cartella)
+/data/notes/*.md

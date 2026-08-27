@@ -63,7 +63,11 @@ export interface SearchResult {
 export interface SearchSummary {
   queryId: string;
   queryString: string;
+  // Risultati effettivamente salvati (esclusi i duplicati già presenti).
   total: number;
+  // Quanti risultati sono stati scartati perché già salvati in precedenza.
+  duplicates: number;
+  // Conteggio grezzo per motore, prima della deduplicazione.
   perSource: Record<string, number | string>;
 }
 

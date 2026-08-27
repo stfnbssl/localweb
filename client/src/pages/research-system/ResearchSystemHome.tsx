@@ -100,11 +100,12 @@ export default function ResearchSystemHome() {
           <code className="rounded bg-slate-100 px-1 py-0.5 text-neutral-700">
             /api/research
           </code>
-          . L'estrazione delle categorie richiede una{' '}
+          . L'estrazione delle categorie non richiede alcuna API key: il server
+          lancia la CLI{' '}
           <code className="rounded bg-slate-100 px-1 py-0.5 text-neutral-700">
-            ANTHROPIC_API_KEY
+            claude
           </code>{' '}
-          in <code className="text-neutral-700">server/.env</code>.
+          già installata e autenticata su questa macchina.
         </p>
         <Link
           to={`${RESEARCH_SYSTEM_BASE}/temi`}

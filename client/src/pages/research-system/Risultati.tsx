@@ -213,7 +213,10 @@ export default function Risultati() {
           {searchMutation.isSuccess && (
             <div className="mt-4 rounded-lg bg-emerald-50 p-3 text-xs text-emerald-800">
               <span className="font-semibold">
-                {searchMutation.data.total} risultati.
+                {searchMutation.data.total} nuovi risultati
+                {searchMutation.data.duplicates > 0 &&
+                  ` (${searchMutation.data.duplicates} già presenti, scartati)`}
+                .
               </span>{' '}
               {Object.entries(searchMutation.data.perSource).map(([s, v]) => (
                 <span key={s} className="mr-3">

@@ -13,7 +13,7 @@ riscritture.
 
 ---
 
-## 1. I risultati si duplicano se rilanci la stessa ricerca ⚠️
+## 1. I risultati si duplicano se rilanci la stessa ricerca ✅ FATTO
 
 **Il problema.** `POST /api/research/queries/:id/search` fa `appendMany` sui
 risultati (`routes/research.ts:258`) e ogni risultato riceve un `randomUUID` nuovo
@@ -33,9 +33,15 @@ l'append idempotente per costruzione.
 
 **Costo:** ~20 righe. **Valore:** alto.
 
+> **Risolto.** `resultKey()` in `routes/research.ts` costruisce la chiave logica
+> (`source` + doi/url/titolo normalizzato) e l'endpoint di ricerca filtra i doppioni
+> sia contro quanto già salvato sia dentro lo stesso batch. La risposta espone
+> `duplicates` e la UI lo mostra ("N nuovi risultati (M già presenti, scartati)"),
+> così un rilancio che non aggiunge nulla si spiega da sé invece di sembrare un guasto.
+
 ---
 
-## 2. Le note personali finiscono su GitHub
+## 2. Le note personali finiscono su GitHub ✅ FATTO
 
 **Il problema.** `.gitignore` esclude `/data/research/` e `/data/documents/`, ma **non**
 `/data/notes/`. E `git ls-files` mostra che due note prodotte dall'uso reale sono già
@@ -66,9 +72,14 @@ solo "rumore", basta rimuoverli d'ora in avanti.
 
 **Costo:** 2 comandi. **Valore:** alto se il contenuto è personale.
 
+> **Risolto.** Le due note sono uscite dal tracking (`git rm --cached`, restano su
+> disco) e `.gitignore` ora contiene `/data/notes/*.md`. Il contenuto delle due note
+> era costituito da riferimenti a paper accademici pubblici, quindi la storia git
+> **non** è stata riscritta: non c'era nulla di sensibile da cancellare.
+
 ---
 
-## 3. Documentazione che si contraddice sull'API key
+## 3. Documentazione che si contraddice sull'API key ✅ FATTO
 
 `server/src/index.ts:54` dice, correttamente, che l'estrazione categorie avviene via
 spawn della CLI `claude` e che **non serve** `ANTHROPIC_API_KEY`. Ma la schermata
@@ -86,6 +97,9 @@ va a cercare una chiave che non gli serve.
 
 **Costo:** 3 righe di JSX. **Valore:** medio-alto (è il primo ostacolo per chiunque
 riprenda il progetto tra sei mesi).
+
+> **Risolto.** `ResearchSystemHome.tsx` ora dice che non serve alcuna API key e che
+> il server lancia la CLI `claude` già autenticata sulla macchina.
 
 ---
 
@@ -213,7 +227,7 @@ attuale:
 
 ---
 
-## Se dovessi fare solo tre cose
+## Se dovessi fare solo tre cose ✅ fatte il 27/08/2026
 
 1. **Il fix dei duplicati** (punto 1) — è l'unico che produce dati sbagliati.
 2. **Togliere le note da git** (punto 2) — due comandi, ed è privacy.
@@ -221,3 +235,5 @@ attuale:
    apre il progetto.
 
 Insieme: meno di un'ora.
+
+Tutti e tre applicati; i punti **4-9 restano aperti**.

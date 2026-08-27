@@ -39,6 +39,19 @@ function now() {
   return new Date().toISOString();
 }
 
+// Chiave logica di un risultato: due record con la stessa chiave sono lo stesso
+// paper, anche se hanno id diversi (l'id è generato a ogni fetch). Il DOI è
+// l'identificatore forte; in sua assenza si ripiega su url e infine sul titolo
+// normalizzato. La sorgente fa parte della chiave: lo stesso paper trovato da
+// due motori resta due risultati distinti, con metadati potenzialmente diversi.
+function resultKey(r: SearchResult): string {
+  const ident =
+    r.doi?.trim().toLowerCase() ||
+    r.url?.trim().toLowerCase() ||
+    r.title.trim().toLowerCase().replace(/\s+/g, ' ');
+  return `${r.source}::${ident}`;
+}
+
 // --- Motori disponibili ---
 router.get('/engines', (_req, res) => {
   res.json({ sources: ALL_SOURCES });
@@ -255,7 +268,21 @@ router.post('/queries/:id/search', async (req, res) => {
     }
   });
 
-  await resultsStore(query.id).appendMany(allResults);
+  // Rilanciare la stessa ricerca è un gesto naturale (il pulsante resta lì): senza
+  // deduplicazione ogni rilancio raddoppierebbe i risultati e l'export si
+  // ritroverebbe due copie dello stesso paper. Si scartano sia i doppioni rispetto
+  // a quanto già salvato, sia quelli interni a questo stesso batch.
+  const store = resultsStore(query.id);
+  const seen = new Set((await store.readAll()).map(resultKey));
+  const fresh = allResults.filter((r) => {
+    const key = resultKey(r);
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+  const duplicates = allResults.length - fresh.length;
+
+  await store.appendMany(fresh);
 
   // Segna la query come eseguita (diventa immutabile) alla prima esecuzione.
   if (!query.executedAt) {
@@ -266,7 +293,8 @@ router.post('/queries/:id/search', async (req, res) => {
     queryId: query.id,
     queryString: query.queryString,
     searchType: type.id,
-    total: allResults.length,
+    total: fresh.length,
+    duplicates,
     perSource,
   });
 });
