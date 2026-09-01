@@ -57,7 +57,7 @@ aggiunta senza pensare a deploy, sicurezza multi-utente o costi di hosting.
 
 ---
 
-## Le due sezioni operative
+## Le sezioni operative
 
 ### Research System — ricerca bibliografica assistita
 
@@ -91,8 +91,59 @@ leggibili (non il muro di sottotitoli) e salvata come nota Markdown con
 frontmatter. Se la lingua richiesta non esiste, l'app propone quelle disponibili
 invece di fallire e basta.
 
+Oltre al singolo video si può lavorare per **canale**: dal feed pubblico di
+YouTube si leggono gli **ultimi 15 video** e se ne scaricano le trascrizioni in
+blocco. Lo stato di ogni video resta in archivio, quindi rilanciare più avanti
+scarica **solo i video nuovi** invece di rifare tutto.
+
+Le sorgenti dell'elenco sono due e l'app sceglie da sé. Senza configurazione usa
+il **feed RSS pubblico**: nessuna chiave, ma un tetto fisso di 15 video, non
+paginabile. Se in `server/.env` c'è una `API_KEY_YOUTUBE`, passa alla **YouTube
+Data API v3** e il tetto cade: si risale indietro nella cronologia quanto si
+vuole. La chiave è gratuita e non richiede fatturazione — 10.000 unità di quota
+al giorno, di cui ne serve circa 1 ogni 50 video.
+
+Le trascrizioni, invece, l'API ufficiale non le dà affatto per i canali altrui —
+`captions.download` richiede di essere proprietari del video — quindi quella
+parte passa comunque dall'endpoint pubblico, con o senza chiave.
+
 L'obiettivo è lo stesso del Research System: **portare una fonte esterna dentro
 l'archivio personale in un formato lavorabile.**
+
+### Reports — pagine di consultazione già pronte
+
+Una volta che le trascrizioni di un canale sono sul disco, il lavoro di sintesi
+produce due cose distinte: un **corpus analizzato** in JSON, uno per canale, e
+una **pagina HTML autonoma** — un solo file, senza dipendenze — che lo rende
+navigabile. L'app li elenca e li mostra, ma non li genera e non ne conosce la
+struttura: sono materiale scritto a mano.
+
+Perché una pagina a sé e non una schermata React: la sintesi deve restare
+leggibile anche fuori dall'app, passata a qualcun altro o aperta da sola,
+esattamente come le note Markdown. L'app la incornicia, non la possiede.
+
+Entrambi stanno in `reports/`, **versionato in git**:
+
+```
+reports/
+├── viewer/index.html                    il visualizzatore, uno per tutti i canali
+└── youtube/<channelId>/synthesis.json   il corpus analizzato, uno per canale
+```
+
+La separazione non è cosmetica. La pagina è codice, e tenerne una copia per
+canale significherebbe riallinearle a mano a ogni correzione. Il corpus è il
+prodotto di un lavoro di analisi che *non si rigenera da sé*, a differenza delle
+trascrizioni: se vivesse sotto `data/`, un `git clone` su un'altra macchina
+lascerebbe l'app senza nulla da mostrare. Le trascrizioni grezze, che invece si
+riscaricano dal canale, restano in `data/youtube/` e fuori da git.
+
+A tenerli insieme è il server: serve la pagina come
+`/api/reports/view/<channelId>/index.html` e il corpus come
+`.../synthesis.json`, così la pagina lo trova con un `fetch('./synthesis.json')`
+relativo pur non avendolo accanto sul disco. Appena esiste un
+`reports/youtube/<channelId>/synthesis.json`, il report compare nel menù
+*Reports* — con il titolo letto da `meta.title` del corpus. Fuori da quei due
+percorsi non viene esposto nulla.
 
 ---
 
@@ -103,8 +154,14 @@ data/
 ├── notes/       note Markdown esportate (compatibili Obsidian)
 ├── documents/   documenti originali scaricati (PDF, HTML)
 ├── research/    temi, categorie, query e risultati in JSONL
+├── youtube/     trascrizioni per canale + index.jsonl con lo stato di ogni video
 └── json/        dati JSON generici
 ```
+
+Fuori da `data/`, e **dentro** git, c'è invece `reports/`: il visualizzatore e i
+corpus analizzati (vedi [Reports](#reports--pagine-di-consultazione-già-pronte)).
+Il criterio è se la cosa si ricostruisce da sola: le trascrizioni si riscaricano
+dal canale, un'analisi scritta a mano no.
 
 L'intento è che i contenuti prodotti dall'uso quotidiano **restino privati sulla
 macchina** e fuori da git. Oggi `research/` e `documents/` sono ignorati, mentre
@@ -138,6 +195,7 @@ I job Claude **non richiedono una `ANTHROPIC_API_KEY`**: il server lancia la CLI
 ## Come evolve
 
 L'app è organizzata per **sezioni indipendenti** (Research System, YouTube
-Transcript): ognuna ha le sue pagine, le sue rotte server e la sua area dati.
+Transcript, Reports): ognuna ha le sue pagine, le sue rotte server e la sua area
+dati.
 Aggiungerne una nuova non tocca le esistenti — ed è il modo previsto per far
 crescere il progetto man mano che emergono nuove fonti da portare nell'archivio.

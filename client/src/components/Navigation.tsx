@@ -15,6 +15,11 @@ const SECTIONS = [
     label: 'YouTube Transcript',
     match: (p: string) => p.startsWith('/youtube'),
   },
+  {
+    to: '/reports',
+    label: 'Reports',
+    match: (p: string) => p.startsWith('/reports'),
+  },
 ];
 
 export default function Navigation() {

@@ -10,6 +10,20 @@ const DATA_ROOT = path.resolve(
 const RESEARCH_DIR = path.join(DATA_ROOT, 'research');
 const NOTES_DIR = path.join(DATA_ROOT, 'notes');
 const DOCUMENTS_DIR = path.join(DATA_ROOT, 'documents');
+const YOUTUBE_DIR = path.join(DATA_ROOT, 'youtube');
+
+// I report NON stanno sotto DATA_ROOT: pagina di consultazione e sintesi JSON
+// sono contenuto del repository, perché un git clone su un'altra macchina deve
+// portarseli dietro. Sotto data/ restano solo i transcript, che si riscaricano.
+// Il percorso risale a partire da questo file (server/src/research o
+// server/dist/research, stessa profondità in entrambi i casi).
+const REPORTS_ROOT = path.resolve(__dirname, '../../../reports');
+
+// Radice effettiva dei dati, per poterla stampare all'avvio: due istanze avviate
+// con DATA_DIR diverse sono indistinguibili da fuori finché non lo dicono.
+export function dataDir(): string {
+  return DATA_ROOT;
+}
 
 export function researchPath(...segments: string[]): string {
   return path.join(RESEARCH_DIR, ...segments);
@@ -21,6 +35,16 @@ export function notesPath(...segments: string[]): string {
 
 export function documentsPath(...segments: string[]): string {
   return path.join(DOCUMENTS_DIR, ...segments);
+}
+
+export function youtubePath(...segments: string[]): string {
+  return path.join(YOUTUBE_DIR, ...segments);
+}
+
+// Radice dei report versionati (reports/ nel repository), da tenere distinta da
+// dataDir(): la prima si clona, la seconda si ricostruisce.
+export function reportsPath(...segments: string[]): string {
+  return path.join(REPORTS_ROOT, ...segments);
 }
 
 // Scrive un file di testo creando le cartelle mancanti.
@@ -48,10 +72,15 @@ async function ensureDir(filePath: string): Promise<void> {
 // Store append-only su file JSONL (una riga = un record JSON), con
 // read-modify-write per update/delete. Adatto a un'app locale mono-utente.
 export class JsonlStore<T extends { id: string }> {
-  constructor(private readonly fileName: string) {}
+  // `resolveDir` decide sotto quale cartella di data/ vive il file: di default
+  // research/, ma la sezione YouTube passa youtubePath.
+  constructor(
+    private readonly fileName: string,
+    private readonly resolveDir: (...segments: string[]) => string = researchPath
+  ) {}
 
   private get filePath(): string {
-    return researchPath(this.fileName);
+    return this.resolveDir(this.fileName);
   }
 
   async readAll(): Promise<T[]> {

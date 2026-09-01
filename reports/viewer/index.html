@@ -1,0 +1,1612 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sintesi critica di un corpus YouTube</title>
+<style>
+*,*::before,*::after{box-sizing:border-box}
+
+:root{
+  color-scheme:light dark;
+
+  --bg:#faf9f7;
+  --surface:#ffffff;
+  --surface-2:#f3f1ed;
+  --surface-3:#e9e6e0;
+  --text:#191817;
+  --muted:#56534e;
+  --faint:#77736c;
+  --border:#ddd9d2;
+  --border-strong:#bfbab1;
+  --link:#15527e;
+  --focus:#15527e;
+
+  --warn-bg:#fdf5e3;
+  --warn-border:#cfa63f;
+  --warn-text:#63480a;
+
+  --mark-bg:#ffdf7e;
+  --mark-fg:#3a2c00;
+
+  /* scala di affidabilita: progressione ordinale, mai sola portatrice di informazione */
+  --r1-fg:#0f5535; --r1-bg:#e4f1e9; --r1-line:#2f8058;
+  --r2-fg:#6a4a04; --r2-bg:#faf0d6; --r2-line:#c69a2a;
+  --r3-fg:#8a3a08; --r3-bg:#fbe8db; --r3-line:#cf6f2b;
+  --r4-fg:#8b1e21; --r4-bg:#fae3e3; --r4-line:#ab3034;
+
+  /* claim_type: classificazione nominale, colore neutro identico per tutti i valori */
+  --ct-fg:#3b3934; --ct-bg:#f0eee9; --ct-line:#a9a49a;
+
+  /* valutazione esterna ai transcript: asse a se, non ordinale e non un avviso */
+  --ext-fg:#332e60; --ext-bg:#eeedf8; --ext-line:#6a63a6;
+
+  --radius:6px;
+  --shadow:0 1px 2px rgba(0,0,0,.06);
+  --font:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  --mono:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,"Liberation Mono",monospace;
+  --prose:66ch;
+}
+
+@media (prefers-color-scheme: dark){
+  :root{
+    --bg:#131416;
+    --surface:#1a1c1f;
+    --surface-2:#212428;
+    --surface-3:#2a2e33;
+    --text:#e8e6e2;
+    --muted:#a8a49d;
+    --faint:#8b877f;
+    --border:#333840;
+    --border-strong:#4a505a;
+    --link:#7fb6ea;
+    --focus:#7fb6ea;
+
+    --warn-bg:#2e2510;
+    --warn-border:#8a6d1e;
+    --warn-text:#e6cf92;
+
+    --mark-bg:#6a5310;
+    --mark-fg:#ffeeb8;
+
+    --r1-fg:#8fd8b0; --r1-bg:#152a20; --r1-line:#3f8f63;
+    --r2-fg:#e6c877; --r2-bg:#2c2412; --r2-line:#9d7c22;
+    --r3-fg:#f0a878; --r3-bg:#301d11; --r3-line:#a85f27;
+    --r4-fg:#f09a9c; --r4-bg:#2f1618; --r4-line:#9c3437;
+
+    --ct-fg:#cfcbc3; --ct-bg:#24272b; --ct-line:#5c6169;
+
+    --ext-fg:#c8c3ee; --ext-bg:#20203a; --ext-line:#736bb4;
+  }
+}
+
+html{-webkit-text-size-adjust:100%}
+body{
+  margin:0;
+  background:var(--bg);
+  color:var(--text);
+  font-family:var(--font);
+  font-size:15px;
+  line-height:1.55;
+  overflow-x:hidden;
+}
+a{color:var(--link)}
+a:focus-visible,button:focus-visible,input:focus-visible,summary:focus-visible,[tabindex]:focus-visible{
+  outline:2px solid var(--focus); outline-offset:2px; border-radius:3px;
+}
+h1,h2,h3,h4{line-height:1.25;margin:0 0 .4em}
+h1{font-size:1.5rem;letter-spacing:-.01em}
+h2{font-size:1.18rem;letter-spacing:-.005em}
+h3{font-size:1.02rem}
+h4{font-size:.92rem}
+p{margin:0 0 .7em}
+ul,ol{margin:0 0 .7em;padding-left:1.25em}
+li{margin:0 0 .35em}
+code,kbd{font-family:var(--mono);font-size:.86em}
+hr{border:0;border-top:1px solid var(--border);margin:1.6rem 0}
+
+.wrap{max-width:1080px;margin:0 auto;padding:0 16px}
+.prose{max-width:var(--prose)}
+
+/* ---------- barra di navigazione ---------- */
+.topbar{
+  position:sticky;top:0;z-index:30;
+  background:var(--surface);
+  border-bottom:1px solid var(--border);
+}
+.topbar-in{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;padding:8px 16px;max-width:1080px;margin:0 auto}
+.brand{font-weight:700;font-size:.95rem;letter-spacing:-.01em;white-space:nowrap}
+.brand a{color:inherit;text-decoration:none}
+.brand a:hover{text-decoration:underline}
+.nav{display:flex;flex-wrap:wrap;gap:2px}
+.nav a{
+  display:inline-block;padding:4px 9px;border-radius:5px;
+  font-size:.86rem;color:var(--muted);text-decoration:none;border:1px solid transparent;
+}
+.nav a:hover{background:var(--surface-2);color:var(--text)}
+.nav a.on{background:var(--surface-3);color:var(--text);border-color:var(--border-strong);font-weight:600}
+.searchbox{margin-left:auto;display:flex;align-items:center;gap:6px}
+.searchbox input{
+  font:inherit;font-size:.86rem;padding:5px 9px;min-width:190px;
+  background:var(--bg);color:var(--text);
+  border:1px solid var(--border-strong);border-radius:5px;
+}
+@media (max-width:680px){
+  .searchbox{margin-left:0;width:100%}
+  .searchbox input{flex:1;min-width:0}
+}
+
+/* ---------- barra filtri ---------- */
+.filterbar{background:var(--surface-2);border-bottom:1px solid var(--border);font-size:.84rem}
+.filterbar-in{max-width:1080px;margin:0 auto;padding:8px 16px;display:flex;flex-direction:column;gap:7px}
+.frow{display:flex;flex-wrap:wrap;align-items:center;gap:6px}
+.flabel{color:var(--faint);font-size:.78rem;text-transform:uppercase;letter-spacing:.05em;margin-right:2px}
+.chip{
+  display:inline-flex;align-items:center;gap:5px;
+  padding:3px 9px;border-radius:999px;cursor:pointer;
+  border:1px solid var(--border-strong);background:var(--surface);
+  color:var(--muted);font-size:.82rem;font-family:inherit;line-height:1.4;
+}
+.chip:hover{border-color:var(--text)}
+.chip .cnt{font-size:.75rem;color:var(--faint);font-variant-numeric:tabular-nums}
+.chip[aria-pressed="true"]{color:var(--text);font-weight:600}
+.chip[aria-pressed="false"]{opacity:.55;text-decoration:line-through;text-decoration-thickness:1px}
+.chip[aria-pressed="true"].r1{background:var(--r1-bg);border-color:var(--r1-line);color:var(--r1-fg)}
+.chip[aria-pressed="true"].r2{background:var(--r2-bg);border-color:var(--r2-line);color:var(--r2-fg)}
+.chip[aria-pressed="true"].r3{background:var(--r3-bg);border-color:var(--r3-line);color:var(--r3-fg)}
+.chip[aria-pressed="true"].r4{background:var(--r4-bg);border-color:var(--r4-line);color:var(--r4-fg)}
+.chip[aria-pressed="true"].ct{background:var(--ct-bg);border-color:var(--ct-line);color:var(--ct-fg);border-style:dashed}
+.chip .gl{font-family:var(--mono);font-weight:700}
+details.legend{margin-top:2px}
+details.legend > summary{cursor:pointer;color:var(--link);font-size:.82rem;width:max-content}
+.legend-body{
+  margin-top:7px;padding:9px 11px;background:var(--surface);
+  border:1px solid var(--border);border-radius:var(--radius);
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(290px,1fr));gap:8px 18px;
+}
+.legend-body dl{margin:0}
+.legend-body dt{margin:0 0 2px}
+.legend-body dd{margin:0 0 9px;color:var(--muted);font-size:.83rem;max-width:60ch}
+
+/* ---------- badge ---------- */
+.badge{
+  display:inline-flex;align-items:baseline;gap:5px;
+  padding:1px 7px 2px;border-radius:4px;
+  font-size:.75rem;font-weight:600;letter-spacing:.01em;
+  border:1px solid;white-space:nowrap;vertical-align:baseline;
+}
+.badge .gl{font-family:var(--mono);font-size:.9em;font-weight:700}
+.badge.r1{background:var(--r1-bg);border-color:var(--r1-line);color:var(--r1-fg)}
+.badge.r2{background:var(--r2-bg);border-color:var(--r2-line);color:var(--r2-fg)}
+.badge.r3{background:var(--r3-bg);border-color:var(--r3-line);color:var(--r3-fg)}
+.badge.r4{background:var(--r4-bg);border-color:var(--r4-line);color:var(--r4-fg)}
+/* claim_type: nominale - stesso colore per tutti, si distingue per glifo e bordo tratteggiato */
+.badge.ct{background:var(--ct-bg);border-color:var(--ct-line);border-style:dashed;color:var(--ct-fg);font-weight:500}
+.badge.tag{background:var(--surface-2);border-color:var(--border);color:var(--faint);font-weight:500;border-style:dotted}
+.badge.kind{background:var(--surface-3);border-color:var(--border-strong);color:var(--muted);font-weight:500}
+.badge.clipmark{background:var(--surface-3);border-color:var(--border-strong);color:var(--muted);font-weight:700;border-style:double;border-width:3px;padding:0 6px 1px}
+.badges{display:flex;flex-wrap:wrap;gap:5px;align-items:center}
+
+/* ---------- blocchi ---------- */
+.card{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--radius);padding:14px 16px;box-shadow:var(--shadow);
+}
+.section{margin:26px 0}
+.section > h2{
+  border-bottom:1px solid var(--border);padding-bottom:5px;margin-bottom:12px;
+  display:flex;align-items:baseline;gap:9px;flex-wrap:wrap;
+}
+.section > h2 .n{font-size:.8rem;font-weight:500;color:var(--faint);font-variant-numeric:tabular-nums}
+.note{
+  margin-top:8px;padding:8px 11px;
+  background:var(--surface-2);border-left:3px solid var(--border-strong);
+  border-radius:0 4px 4px 0;
+  font-size:.87rem;color:var(--muted);max-width:74ch;
+}
+.note .lab{
+  display:block;font-size:.7rem;text-transform:uppercase;letter-spacing:.06em;
+  color:var(--faint);font-weight:700;margin-bottom:2px;
+}
+.warn{
+  padding:11px 13px;background:var(--warn-bg);
+  border:1px solid var(--warn-border);border-left-width:4px;border-radius:0 4px 4px 0;
+  color:var(--warn-text);
+}
+.warn h3{color:inherit;margin-bottom:.35em;font-size:.95rem}
+.warn ul{margin-bottom:0}
+.warn a{color:inherit}
+.commercial{
+  padding:11px 13px;background:var(--surface-2);
+  border:1px dashed var(--border-strong);border-radius:var(--radius);max-width:74ch;
+}
+.meta-line{color:var(--faint);font-size:.83rem;display:flex;flex-wrap:wrap;gap:4px 12px;align-items:center}
+.mono{font-family:var(--mono);font-size:.86em}
+.na{color:var(--faint);font-style:italic}
+.empty-state{
+  padding:12px 14px;border:1px dashed var(--border-strong);border-radius:var(--radius);
+  color:var(--muted);background:var(--surface-2);max-width:74ch;
+}
+mark{background:var(--mark-bg);color:var(--mark-fg);padding:0 1px;border-radius:2px}
+
+/* ---------- valutazione esterna ai transcript ----------
+   credibility_note non e affidabilita e non e un avviso di pericolo: asse
+   separato, colore proprio, e comunque riconoscibile in scala di grigi
+   grazie all'intestazione testuale e al bordo doppio. */
+.external{
+  margin-top:9px;padding:9px 11px;
+  background:var(--ext-bg);color:var(--ext-fg);
+  border:1px solid var(--ext-line);border-left:4px double var(--ext-line);
+  border-radius:0 4px 4px 0;font-size:.86rem;max-width:74ch;
+}
+.external .lab{
+  display:block;font-size:.71rem;text-transform:uppercase;letter-spacing:.06em;
+  font-weight:700;margin-bottom:3px;
+}
+.external .lab .gl{font-family:var(--mono);margin-right:4px}
+.ext-none{
+  margin:9px 0 0;font-size:.8rem;color:var(--faint);font-style:italic;
+  padding-left:9px;border-left:1px dotted var(--border-strong);
+}
+.ext-mark{
+  display:inline-block;font-size:.72rem;font-weight:700;letter-spacing:.03em;
+  padding:0 6px 1px;border-radius:4px;
+  background:var(--ext-bg);color:var(--ext-fg);border:1px solid var(--ext-line);
+}
+.linkbtn{
+  font:inherit;font-size:inherit;color:var(--link);background:none;
+  border:0;border-bottom:1px solid currentColor;padding:0;cursor:pointer;
+}
+.linkbtn:hover{border-bottom-style:dashed}
+.chip[aria-pressed="true"].dis{background:var(--ext-bg);border-color:var(--ext-line);color:var(--ext-fg)}
+.statgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px 18px;margin:0 0 6px}
+.statgrid .k{font-size:.77rem;color:var(--faint);text-transform:uppercase;letter-spacing:.05em}
+.statgrid .n{font-size:1.35rem;font-weight:700;font-variant-numeric:tabular-nums;line-height:1.2}
+
+/* ---------- distribuzioni ---------- */
+.dist-bar{
+  display:flex;width:100%;height:32px;border-radius:4px;overflow:hidden;
+  border:1px solid var(--border-strong);background:var(--surface-2);
+}
+.dist-seg{
+  display:flex;align-items:center;justify-content:center;
+  font-size:.72rem;font-weight:700;font-variant-numeric:tabular-nums;
+  min-width:3px;overflow:hidden;
+}
+.dist-seg.r1{background:var(--r1-bg);color:var(--r1-fg);box-shadow:inset 0 0 0 1px var(--r1-line)}
+.dist-seg.r2{background:var(--r2-bg);color:var(--r2-fg);box-shadow:inset 0 0 0 1px var(--r2-line)}
+.dist-seg.r3{background:var(--r3-bg);color:var(--r3-fg);box-shadow:inset 0 0 0 1px var(--r3-line)}
+.dist-seg.r4{background:var(--r4-bg);color:var(--r4-fg);box-shadow:inset 0 0 0 1px var(--r4-line)}
+.dist-key{
+  list-style:none;padding:0;margin:9px 0 0;
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(215px,1fr));gap:3px 14px;
+  font-size:.82rem;
+}
+.dist-key li{display:flex;align-items:baseline;gap:7px;margin:0}
+.dist-key .v{margin-left:auto;font-variant-numeric:tabular-nums;color:var(--muted);white-space:nowrap}
+/* claim_type: barre orizzontali neutre, mai una scala di colore progressiva */
+.ctbars{list-style:none;padding:0;margin:0;font-size:.83rem}
+.ctbars li{display:grid;grid-template-columns:minmax(110px,auto) 1fr auto;gap:9px;align-items:center;margin:0 0 6px}
+.ctbars .track{background:var(--surface-2);border:1px solid var(--border);border-radius:3px;height:15px;overflow:hidden}
+.ctbars .fill{height:100%;background:var(--ct-line);opacity:.6}
+.ctbars .v{font-variant-numeric:tabular-nums;color:var(--muted);white-space:nowrap}
+.two-col{display:grid;grid-template-columns:repeat(auto-fit,minmax(330px,1fr));gap:18px}
+.microbar{display:flex;height:6px;width:100%;max-width:200px;border-radius:3px;overflow:hidden;background:var(--surface-3)}
+.microbar i{display:block;height:100%}
+.microbar i.r1{background:var(--r1-line)}
+.microbar i.r2{background:var(--r2-line)}
+.microbar i.r3{background:var(--r3-line)}
+.microbar i.r4{background:var(--r4-line)}
+
+/* ---------- indice temi ---------- */
+.theme-list{list-style:none;padding:0;margin:0;display:grid;gap:10px}
+.theme-item{
+  display:grid;grid-template-columns:auto 1fr;gap:4px 13px;
+  background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);
+  padding:12px 14px;box-shadow:var(--shadow);
+}
+.theme-item .rank{
+  font-family:var(--mono);font-size:.9rem;font-weight:700;color:var(--faint);
+  border:1px solid var(--border);border-radius:4px;background:var(--surface-2);
+  width:2.1em;height:2.1em;display:flex;align-items:center;justify-content:center;
+}
+.theme-item .body{min-width:0}
+.theme-item h3{margin:0 0 3px}
+.theme-item h3 a{text-decoration:none}
+.theme-item h3 a:hover{text-decoration:underline}
+.theme-item .why{color:var(--muted);font-size:.88rem;margin:0 0 7px;max-width:74ch}
+.theme-item .foot{display:flex;flex-wrap:wrap;gap:5px 14px;align-items:center;font-size:.79rem;color:var(--faint);font-variant-numeric:tabular-nums}
+.theme-item.filtered-empty{border-style:dashed}
+.flag-empty{
+  display:inline-block;font-size:.74rem;font-weight:600;
+  padding:1px 7px;border-radius:4px;
+  background:var(--warn-bg);border:1px solid var(--warn-border);color:var(--warn-text);
+}
+
+/* ---------- card insight / osservazione ---------- */
+.item{
+  background:var(--surface);border:1px solid var(--border);border-left:3px solid var(--border-strong);
+  border-radius:0 var(--radius) var(--radius) 0;padding:12px 14px;margin:0 0 10px;box-shadow:var(--shadow);
+}
+.item.r1{border-left-color:var(--r1-line)}
+.item.r2{border-left-color:var(--r2-line)}
+.item.r3{border-left-color:var(--r3-line)}
+.item.r4{border-left-color:var(--r4-line)}
+.item .txt{font-size:.99rem;max-width:74ch;margin:0 0 8px}
+.item .support{
+  margin-top:7px;font-size:.87rem;color:var(--muted);
+  padding-left:10px;border-left:2px dotted var(--border-strong);max-width:74ch;
+}
+.item .support .lab{font-weight:700;color:var(--faint);font-size:.72rem;text-transform:uppercase;letter-spacing:.05em;display:block}
+.attr{font-size:.8rem;font-weight:700;color:var(--text);background:var(--surface-3);border:1px solid var(--border);border-radius:4px;padding:1px 7px;white-space:nowrap}
+.chips-videos{display:flex;flex-wrap:wrap;gap:5px;margin-top:9px}
+.vchip{
+  display:inline-block;max-width:36ch;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+  font-size:.77rem;padding:2px 8px;border-radius:999px;
+  background:var(--surface-2);border:1px solid var(--border);color:var(--muted);text-decoration:none;
+}
+.vchip:hover{border-color:var(--border-strong);color:var(--text)}
+
+/* ---------- griglia record ---------- */
+.rec-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:10px}
+.rec{
+  display:block;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);
+  padding:11px 13px;text-decoration:none;color:inherit;box-shadow:var(--shadow);min-width:0;
+}
+.rec:hover{border-color:var(--border-strong)}
+.rec.is-clip{border-style:dashed;background:var(--surface-2)}
+.rec .t{font-weight:650;font-size:.92rem;margin:0 0 5px;color:var(--link);overflow-wrap:anywhere}
+.rec .th{font-size:.84rem;color:var(--muted);margin:0 0 7px;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.rec .f{display:flex;flex-wrap:wrap;gap:4px 9px;align-items:center;font-size:.76rem;color:var(--faint)}
+
+/* ---------- liste dense ---------- */
+.rows{list-style:none;padding:0;margin:0}
+.rows > li{
+  display:flex;flex-wrap:wrap;gap:3px 12px;align-items:baseline;
+  padding:8px 0;border-bottom:1px solid var(--border);margin:0;
+}
+.rows > li:last-child{border-bottom:0}
+.rows .main{flex:1 1 320px;min-width:0}
+.rows .side{font-size:.8rem;color:var(--faint);text-align:right;white-space:nowrap}
+
+/* ---------- tabella cifre ---------- */
+.tablewrap{overflow-x:auto;-webkit-overflow-scrolling:touch;border:1px solid var(--border);border-radius:var(--radius);background:var(--surface)}
+table.figures{border-collapse:collapse;width:100%;min-width:560px;font-size:.87rem}
+table.figures th,table.figures td{text-align:left;padding:8px 11px;border-bottom:1px solid var(--border);vertical-align:top}
+table.figures thead th{background:var(--surface-2);font-size:.76rem;text-transform:uppercase;letter-spacing:.05em;color:var(--faint)}
+table.figures tbody tr:last-child td{border-bottom:0}
+table.figures td.val{font-family:var(--mono);white-space:nowrap;font-weight:600}
+td.src-yes::before{content:"\25CF\00a0";color:var(--r1-line)}
+td.src-no{color:var(--faint);font-style:italic;background:var(--surface-2)}
+td.src-no::before{content:"\25CB\00a0";font-style:normal}
+
+/* ---------- scheda record ---------- */
+.rec-head{border-bottom:1px solid var(--border);padding-bottom:12px;margin-bottom:16px}
+.rec-head h1{overflow-wrap:anywhere}
+.guest{
+  background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);
+  padding:10px 12px;box-shadow:var(--shadow);
+}
+.guest .gn{font-weight:700;margin:0 0 3px;overflow-wrap:anywhere}
+.guest .ga{font-size:.85rem;color:var(--muted);margin:0 0 5px}
+.guest .ge{font-size:.85rem;color:var(--muted);margin:0}
+.guest .lab{font-size:.71rem;text-transform:uppercase;letter-spacing:.05em;color:var(--faint);font-weight:700;margin-right:4px}
+.guest-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:10px}
+.backlink{display:inline-block;margin:14px 0 6px;font-size:.86rem}
+
+/* ---------- ricerca ---------- */
+.hit{padding:9px 0;border-bottom:1px solid var(--border)}
+.hit:last-child{border-bottom:0}
+.hit .where{font-size:.76rem;color:var(--faint);margin-bottom:2px}
+.hit .txt{max-width:78ch}
+
+/* ---------- caricamento / fallback ---------- */
+#boot{padding:34px 0}
+.loader{color:var(--muted)}
+.fallback{max-width:660px}
+.fallback pre{
+  background:var(--surface-2);border:1px solid var(--border);border-radius:var(--radius);
+  padding:10px 12px;overflow-x:auto;font-family:var(--mono);font-size:.85rem;margin:.6em 0;
+}
+.fallback input[type=file]{font:inherit;font-size:.88rem;margin-top:6px;max-width:100%}
+.skip{position:absolute;left:-9999px}
+.skip:focus{left:8px;top:8px;z-index:99;background:var(--surface);padding:8px 12px;border:1px solid var(--border-strong);border-radius:4px}
+footer.pagefoot{margin:40px 0 30px;padding-top:14px;border-top:1px solid var(--border);color:var(--faint);font-size:.8rem;max-width:74ch}
+@media print{.topbar,.filterbar{position:static}}
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Vai al contenuto</a>
+<div id="app" hidden></div>
+<div id="boot" class="wrap"><p class="loader">Caricamento della sintesi…</p></div>
+<script>
+"use strict";
+/* ------------------------------------------------------------------
+   Visualizzatore di sintesi critica di corpus YouTube. Schema v2.1.
+   Un solo file, tre corpus: tutto cio che e opzionale nello schema
+   (claim_type, guests, contested_points, clip, guest_index,
+   credibility_note, records_with_no_disagreement) viene rilevato dai
+   dati, non assunto. Le scale si leggono dal file, mai dal codice:
+   le stesse etichette sono calibrate diversamente su generi diversi.
+   ------------------------------------------------------------------ */
+
+/* Nome canonico del file di dati. Sul disco questa pagina e una sola
+   (reports/viewer/index.html) e i corpus stanno in reports/youtube/<canale>/:
+   e il server ad affiancarli, servendo la pagina come
+   /api/reports/view/<canale>/index.html e il corpus come ./synthesis.json.
+   I tre nomi storici restano come ripiego per una cartella aperta com'e. */
+var CANDIDATES = [
+  "./synthesis.json",
+  "./statrys-china-analysis-synthesis.json",
+  "./chinatalk-analysis-synthesis.json",
+  "./cyrus-janssen-analysis-synthesis.json"
+];
+
+var REL_ORDER = ["verifiable", "plausible_unverified", "likely_exaggerated", "misleading_or_wrong"];
+var REL_CLASS = { verifiable: "r1", plausible_unverified: "r2", likely_exaggerated: "r3", misleading_or_wrong: "r4" };
+/* Glifi: la scala e ordinale, quindi la progressione e leggibile anche in scala di grigi. */
+var REL_GLYPH = { verifiable: "●", plausible_unverified: "◑", likely_exaggerated: "◔", misleading_or_wrong: "○" };
+
+var CT_ORDER = ["empirical", "forecast", "interpretation", "recommendation", "anecdote"];
+/* claim_type e nominale: nessuna scala di colore, solo glifi distinti (e diversi da quelli dell'affidabilita). */
+var CT_GLYPH = { empirical: "=", forecast: "»", interpretation: "~", recommendation: "!", anecdote: "*" };
+
+var CONTENT_TYPE_IT = {
+  analysis: "analisi", explainer: "spiegazione", promotional: "promozionale",
+  interview: "intervista", panel: "panel", solo_commentary: "commento solo",
+  emergency_pod: "puntata straordinaria", clip: "clip"
+};
+
+var D = null;   /* il documento JSON */
+var IX = null;  /* indici derivati */
+var ST = {      /* stato dei filtri, rispecchiato nell'hash */
+  rel: REL_ORDER.slice(),
+  ct: CT_ORDER.slice(),
+  clips: true,
+  dis: false,   /* true = solo i record che registrano un disaccordo */
+  q: ""
+};
+
+/* ---------------- utilita ---------------- */
+
+function esc(s) {
+  if (s === null || s === undefined) return "";
+  return String(s)
+    .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+}
+/* Nessun "null" o "undefined" a schermo: l'assenza si dichiara a parole. */
+function orNA(v, missingText) {
+  if (v === null || v === undefined || String(v).trim() === "") {
+    return '<span class="na">' + esc(missingText || "non dichiarato nell’episodio") + "</span>";
+  }
+  return esc(v);
+}
+function has(v) { return v !== null && v !== undefined && String(v).trim() !== ""; }
+function plural(n, one, many) { return n + " " + (n === 1 ? one : many); }
+function itDate(iso) {
+  if (!has(iso)) return "";
+  var p = String(iso).split("-");
+  if (p.length !== 3) return String(iso);
+  return p[2] + "/" + p[1] + "/" + p[0];
+}
+function el(id) { return document.getElementById(id); }
+
+/* I video_id possono iniziare con '-' o '_': mai usarli nudi in un selettore CSS.
+   Nel DOM sono sempre prefissati, e i lookup passano da getElementById. */
+function domId(prefix, id) { return prefix + "-" + id; }
+
+function ytUrl(id) { return "https://www.youtube.com/watch?v=" + encodeURIComponent(id); }
+
+function relBadge(level) {
+  if (!level) return "";
+  return '<span class="badge ' + REL_CLASS[level] + '" title="' + esc(relDef(level)) + '">' +
+    '<span class="gl" aria-hidden="true">' + REL_GLYPH[level] + "</span>" + esc(level) + "</span>";
+}
+function ctBadge(type) {
+  if (!type || !IX.hasClaimType) return "";
+  return '<span class="badge ct" title="' + esc(ctDef(type)) + '">' +
+    '<span class="gl" aria-hidden="true">' + CT_GLYPH[type] + "</span>" + esc(type) + "</span>";
+}
+/* Le definizioni si leggono sempre dal file: sono calibrate sul genere del corpus. */
+function relDef(level) { return (D && D.reliability_scale && D.reliability_scale[level]) || level; }
+function ctDef(type) { return (D && D.claim_type_scale && D.claim_type_scale[type]) || type; }
+
+function videoTitle(id) {
+  var v = IX.videoById[id];
+  if (v) return v.title;
+  var n = IX.notInTheme[id];
+  if (n) return n.title;
+  return id;
+}
+function videoChip(id) {
+  return '<a class="vchip" href="' + hrefFor("/video/" + id) + '" title="' + esc(videoTitle(id)) + '">' +
+    esc(videoTitle(id)) + "</a>";
+}
+function videoChips(ids) {
+  if (!ids || !ids.length) return "";
+  return '<div class="chips-videos">' + ids.map(videoChip).join("") + "</div>";
+}
+
+/* ---------------- filtri ---------------- */
+
+function relOn(level) { return ST.rel.indexOf(level) !== -1; }
+function ctOn(type) { return !IX.hasClaimType || ST.ct.indexOf(type) !== -1; }
+function passes(item) {
+  if (!relOn(item.reliability)) return false;
+  if (IX.hasClaimType && item.claim_type && !ctOn(item.claim_type)) return false;
+  return true;
+}
+function isClip(v) { return v && v.content_type === "clip"; }
+function hasDisagreement(v) { return !!(v && v.contested_points && v.contested_points.length); }
+/* Filtri di record: agiscono sugli elenchi di record, non sulle singole osservazioni. */
+function videoVisible(v) {
+  if (!ST.clips && isClip(v)) return false;
+  if (ST.dis && IX.hasContested && !hasDisagreement(v)) return false;
+  return true;
+}
+function recordFilterActive() { return (IX.hasClips && !ST.clips) || (IX.hasContested && ST.dis); }
+
+/* ---------------- indici derivati ---------------- */
+
+function buildIndexes() {
+  var ix = {
+    videoById: Object.create(null),
+    themeById: Object.create(null),
+    themesByVideo: Object.create(null),
+    notInTheme: Object.create(null),
+    hasClaimType: !!D.claim_type_scale,
+    hasGuests: !!(D.guest_index && D.guest_index.length),
+    hasClips: false,
+    hasContested: false,
+    /* credibility_note e opzionale (v2.1): senza nemmeno un valore, niente
+       blocco di valutazione esterna da nessuna parte. */
+    hasCredibility: false,
+    disagreeCount: 0,
+    contestedRecords: 0,
+    search: []
+  };
+
+  D.videos.forEach(function (v) {
+    ix.videoById[v.video_id] = v;
+    if (isClip(v)) ix.hasClips = true;
+    if (Array.isArray(v.contested_points)) {
+      ix.hasContested = true;
+      ix.contestedRecords++;
+      if (v.contested_points.length) ix.disagreeCount++;
+    }
+    (v.guests || []).forEach(function (g) { if (has(g.credibility_note)) ix.hasCredibility = true; });
+  });
+  (D.guest_index || []).forEach(function (g) { if (has(g.credibility_note)) ix.hasCredibility = true; });
+  (D.videos_not_in_any_theme || []).forEach(function (n) { ix.notInTheme[n.video_id] = n; });
+
+  /* L'unica relazione tema -> video valida e themes[].video_ids, ed e molti-a-molti:
+     invertirla all'avvio e cio che permette a una scheda di sapere a quali temi appartiene. */
+  D.themes.forEach(function (t) {
+    ix.themeById[t.theme_id] = t;
+    t.video_ids.forEach(function (id) {
+      (ix.themesByVideo[id] || (ix.themesByVideo[id] = [])).push(t);
+    });
+  });
+
+  IX = ix;
+  buildSearchIndex();
+}
+
+function pushHit(type, label, href, text) {
+  if (!has(text)) return;
+  IX.search.push({ type: type, label: label, href: href, text: String(text), lc: String(text).toLowerCase() });
+}
+
+function buildSearchIndex() {
+  D.themes.forEach(function (t) {
+    var href = "#/theme/" + t.theme_id;
+    pushHit("theme", t.label, href, t.label);
+    pushHit("theme", t.label, href, t.description);
+    pushHit("theme", t.label, href, t.why_it_matters);
+    t.key_insights.forEach(function (k) {
+      pushHit("insight", t.label, href, k.insight);
+      pushHit("insight", t.label + " — nota", href, k.note);
+    });
+    (t.watch_outs || []).forEach(function (w) { pushHit("watch_out", t.label, href, w); });
+  });
+
+  D.videos.forEach(function (v) {
+    var href = "#/video/" + v.video_id;
+    pushHit("record", v.title, href, v.title);
+    pushHit("record", v.title, href, v.thesis);
+    v.key_observations.forEach(function (o) {
+      pushHit("observation", v.title, href, o.observation);
+      pushHit("observation", v.title + " — nota", href, o.reliability_note);
+      if (has(o.supporting_data)) pushHit("observation", v.title + " — dati", href, o.supporting_data);
+    });
+    (v.contested_points || []).forEach(function (c) { pushHit("contested", v.title, href, c); });
+    (v.guests || []).forEach(function (g) {
+      pushHit("guest", v.title, href, g.name);
+      if (has(g.affiliation)) pushHit("guest", v.title, href, g.affiliation);
+      if (has(g.expertise_basis)) pushHit("guest", v.title, href, g.expertise_basis);
+      if (has(g.credibility_note)) pushHit("external", v.title + " — " + g.name, href, g.credibility_note);
+    });
+    (v.figures_cited || []).forEach(function (f) {
+      pushHit("figure", v.title, href, f.claim + " — " + f.value);
+    });
+  });
+
+  (D.guest_index || []).forEach(function (g) {
+    pushHit("guest", "indice ospiti", "#/guests", g.name);
+    if (has(g.affiliation)) pushHit("guest", g.name, "#/guests", g.affiliation);
+    if (has(g.expertise_basis)) pushHit("guest", g.name, "#/guests", g.expertise_basis);
+    if (has(g.credibility_note)) pushHit("external", g.name, "#/guests", g.credibility_note);
+  });
+
+  D.known_errors_and_distortions.forEach(function (e) {
+    pushHit("error", videoTitle(e.video), "#/errors", e.error);
+  });
+  D.verify_before_using.forEach(function (v) {
+    pushHit("verify", videoTitle(v.video), "#/verify", v.claim);
+    pushHit("verify", videoTitle(v.video), "#/verify", v.why);
+  });
+}
+
+/* ---------------- hash routing ---------------- */
+
+function parseHash() {
+  var raw = location.hash.replace(/^#/, "");
+  if (raw.charAt(0) !== "/") raw = "/" + raw;
+  var qi = raw.indexOf("?");
+  var path = qi === -1 ? raw : raw.slice(0, qi);
+  var qs = qi === -1 ? "" : raw.slice(qi + 1);
+  var params = {};
+  qs.split("&").forEach(function (kv) {
+    if (!kv) return;
+    var i = kv.indexOf("=");
+    var k = i === -1 ? kv : kv.slice(0, i);
+    var v = i === -1 ? "" : kv.slice(i + 1);
+    try { params[decodeURIComponent(k)] = decodeURIComponent(v.replace(/\+/g, " ")); }
+    catch (err) { params[k] = v; }
+  });
+  /* I segmenti si decodificano singolarmente: gli ID con '-' o '_' passano indenni. */
+  var parts = path.split("/").filter(function (s) { return s !== ""; }).map(function (s) {
+    try { return decodeURIComponent(s); } catch (err) { return s; }
+  });
+  return { parts: parts, params: params, path: path };
+}
+
+/* Lo stato dei filtri vive nell'hash (nessun localStorage): ogni vista e linkabile com'e. */
+function filterQuery() {
+  var out = [];
+  if (ST.rel.length !== REL_ORDER.length) out.push("rel=" + (ST.rel.length ? ST.rel.join(",") : "none"));
+  if (IX && IX.hasClaimType && ST.ct.length !== CT_ORDER.length) out.push("ct=" + (ST.ct.length ? ST.ct.join(",") : "none"));
+  if (IX && IX.hasClips && !ST.clips) out.push("clips=0");
+  if (IX && IX.hasContested && ST.dis) out.push("dis=1");
+  return out;
+}
+function hrefFor(path, extra) {
+  var q = filterQuery().concat(extra || []);
+  return "#" + path + (q.length ? "?" + q.join("&") : "");
+}
+function readFiltersFromHash(params) {
+  if (typeof params.rel === "string") {
+    ST.rel = params.rel === "none" ? [] : params.rel.split(",").filter(function (r) { return REL_ORDER.indexOf(r) !== -1; });
+  } else {
+    ST.rel = REL_ORDER.slice();
+  }
+  if (typeof params.ct === "string") {
+    ST.ct = params.ct === "none" ? [] : params.ct.split(",").filter(function (c) { return CT_ORDER.indexOf(c) !== -1; });
+  } else {
+    ST.ct = CT_ORDER.slice();
+  }
+  ST.clips = params.clips !== "0";
+  ST.dis = params.dis === "1";
+  ST.q = typeof params.q === "string" ? params.q : "";
+}
+/* I cambi di filtro non devono intasare la cronologia: sostituiscono la voce corrente. */
+function replaceHash(h) {
+  if (history.replaceState) { history.replaceState(null, "", h); render(); }
+  else { location.replace(h); }
+}
+function currentPath() {
+  var r = parseHash();
+  return r.path === "" ? "/" : r.path;
+}
+function toggleRel(level) {
+  var i = ST.rel.indexOf(level);
+  if (i === -1) ST.rel.push(level); else ST.rel.splice(i, 1);
+  ST.rel = REL_ORDER.filter(function (r) { return ST.rel.indexOf(r) !== -1; });
+  syncHash();
+}
+function toggleCt(type) {
+  var i = ST.ct.indexOf(type);
+  if (i === -1) ST.ct.push(type); else ST.ct.splice(i, 1);
+  ST.ct = CT_ORDER.filter(function (c) { return ST.ct.indexOf(c) !== -1; });
+  syncHash();
+}
+function toggleClips() { ST.clips = !ST.clips; syncHash(); }
+function toggleDis() { ST.dis = !ST.dis; syncHash(); }
+function resetFilters() {
+  ST.rel = REL_ORDER.slice(); ST.ct = CT_ORDER.slice(); ST.clips = true; ST.dis = false; syncHash();
+}
+function resetRecordFilters() { ST.clips = true; ST.dis = false; syncHash(); }
+function syncHash() {
+  var extra = [];
+  if (currentPath().indexOf("/search") === 0 && ST.q) extra.push("q=" + encodeURIComponent(ST.q));
+  replaceHash(hrefFor(currentPath(), extra));
+}
+
+/* ---------------- intestazione, filtri, legenda ---------------- */
+
+function navHTML(r) {
+  var here = r.parts[0] || "";
+  var items = [
+    { p: "", path: "/", lab: "Temi" },
+    { p: "source", path: "/source", lab: "Fonte" },
+    { p: "verify", path: "/verify", lab: "Da verificare" },
+    { p: "errors", path: "/errors", lab: "Errori noti" }
+  ];
+  if (IX.hasGuests) items.push({ p: "guests", path: "/guests", lab: "Ospiti" });
+  return items.map(function (it) {
+    return '<a class="' + (here === it.p ? "on" : "") + '" href="' + hrefFor(it.path) + '">' + esc(it.lab) + "</a>";
+  }).join("");
+}
+
+function chromeHTML(r) {
+  var h = "";
+  h += '<header class="topbar"><div class="topbar-in">';
+  h += '<div class="brand"><a href="' + hrefFor("/") + '">' + esc(D.source_assessment.channel) + "</a></div>";
+  h += '<nav class="nav" aria-label="Sezioni">' + navHTML(r) + "</nav>";
+  h += '<div class="searchbox"><label class="flabel" for="q">Cerca</label>' +
+       '<input id="q" type="search" autocomplete="off" placeholder="temi, osservazioni, ospiti…" value="' + esc(ST.q) + '"></div>';
+  h += "</div></header>";
+
+  h += '<div class="filterbar"><div class="filterbar-in">';
+
+  h += '<div class="frow"><span class="flabel" id="lab-rel">Affidabilità</span>';
+  REL_ORDER.forEach(function (lv) {
+    h += '<button type="button" class="chip ' + REL_CLASS[lv] + '" data-rel="' + lv + '" aria-pressed="' + relOn(lv) + '" title="' + esc(relDef(lv)) + '">' +
+         '<span class="gl" aria-hidden="true">' + REL_GLYPH[lv] + "</span>" + esc(lv) + "</button>";
+  });
+  h += "</div>";
+
+  if (IX.hasClaimType) {
+    h += '<div class="frow"><span class="flabel">Tipo di affermazione</span>';
+    CT_ORDER.forEach(function (ct) {
+      h += '<button type="button" class="chip ct" data-ct="' + ct + '" aria-pressed="' + (ST.ct.indexOf(ct) !== -1) + '" title="' + esc(ctDef(ct)) + '">' +
+           '<span class="gl" aria-hidden="true">' + CT_GLYPH[ct] + "</span>" + esc(ct) + "</button>";
+    });
+    h += "</div>";
+  }
+
+  var extras = "";
+  if (IX.hasClips) {
+    extras += '<button type="button" class="chip" id="clipToggle" aria-pressed="' + ST.clips + '">' +
+      (ST.clips ? "clip incluse" : "clip escluse") +
+      ' <span class="cnt">' + (D.meta.clips !== undefined ? D.meta.clips : countClips()) + "</span></button>";
+  }
+  /* Un contested_points vuoto e un dato: il filtro isola i record in cui
+     qualcuno ha effettivamente contraddetto qualcun altro. */
+  if (IX.hasContested) {
+    extras += '<button type="button" class="chip dis" id="disToggle" aria-pressed="' + ST.dis +
+      '" title="Mostra solo i record che registrano almeno un punto rimasto in disaccordo">' +
+      "solo record con disaccordo" +
+      ' <span class="cnt">' + IX.disagreeCount + "</span></button>";
+  }
+  var filtersActive = ST.rel.length !== REL_ORDER.length ||
+    (IX.hasClaimType && ST.ct.length !== CT_ORDER.length) || recordFilterActive();
+  if (filtersActive) extras += '<button type="button" class="chip" id="resetFilters" aria-pressed="false" style="text-decoration:none;opacity:1">azzera i filtri</button>';
+  if (extras) h += '<div class="frow"><span class="flabel">Record</span>' + extras + "</div>";
+
+  h += legendHTML();
+  h += "</div></div>";
+  return h;
+}
+
+function countClips() {
+  return D.videos.filter(isClip).length;
+}
+
+/* Legenda e tooltip sono generati dalle scale presenti nel file, mai riscritti nel codice. */
+function legendHTML() {
+  var h = '<details class="legend"><summary>Legenda delle scale, come definite in questo corpus</summary><div class="legend-body">';
+  h += "<dl><dt><strong>Affidabilità</strong> — scala ordinale a quattro livelli</dt>";
+  REL_ORDER.forEach(function (lv) {
+    h += "<dd>" + relBadge(lv) + " " + esc(relDef(lv)) + "</dd>";
+  });
+  h += "</dl>";
+  if (IX.hasClaimType) {
+    h += "<dl><dt><strong>Tipo di affermazione</strong> — classificazione non ordinale</dt>";
+    CT_ORDER.forEach(function (ct) {
+      h += "<dd>" + ctBadge(ct) + " " + esc(ctDef(ct)) + "</dd>";
+    });
+    h += "</dl>";
+  }
+  if (IX.hasCredibility) {
+    h += "<dl><dt><strong>Valutazione esterna ai transcript</strong> — non è una scala</dt>";
+    h += "<dd>" + '<span class="ext-mark">↗ esterna</span> ' +
+      "Alcune persone hanno una <code>credibility_note</code>: un giudizio che <strong>non viene dagli episodi</strong> ma da conoscenza esterna — " +
+      "track record pubblico di previsioni, affiliazioni, credenziali accademiche verificate o loro assenza. " +
+      "Non è ordinale e non è negativa per definizione: dove la persona è specialista del campo di cui si parla, il campo lo dice. " +
+      "Va tenuta distinta da <code>expertise_basis</code>, che riporta invece ciò che l’episodio stesso dichiara.</dd></dl>";
+  }
+  h += "</div></details>";
+  return h;
+}
+
+/* credibility_note porta conoscenza esterna ai transcript: si mostra marcata
+   come tale, con un colore che non appartiene alla scala di affidabilita e non
+   e quello di un avviso. Dove il campo manca, lo si dichiara invece di tacere. */
+function credibilityHTML(g) {
+  if (!IX.hasCredibility) return "";
+  if (!has(g.credibility_note)) {
+    return '<p class="ext-none">Nessuna valutazione esterna ai transcript per questa persona.</p>';
+  }
+  return '<div class="external"><span class="lab"><span class="gl" aria-hidden="true">↗</span>' +
+    "Valutazione esterna ai transcript</span>" + esc(g.credibility_note) + "</div>";
+}
+
+/* ---------------- distribuzioni ---------------- */
+
+function relDistHTML(dist, caption) {
+  var total = REL_ORDER.reduce(function (a, k) { return a + (dist[k] || 0); }, 0);
+  if (!total) return "";
+  var bar = REL_ORDER.map(function (k) {
+    var n = dist[k] || 0;
+    if (!n) return "";
+    var pct = (n / total) * 100;
+    return '<div class="dist-seg ' + REL_CLASS[k] + '" style="width:' + pct.toFixed(3) + '%" title="' + esc(k) + ": " + n + '">' +
+      (pct > 7 ? n : "") + "</div>";
+  }).join("");
+  var key = REL_ORDER.map(function (k) {
+    var n = dist[k] || 0;
+    return "<li>" + relBadge(k) + '<span class="v">' + n + " · " + ((n / total) * 100).toFixed(0) + "%</span></li>";
+  }).join("");
+  return "<h3>" + esc(caption) + "</h3>" +
+    '<div class="dist-bar" role="img" aria-label="' + esc(caption + ": " + REL_ORDER.map(function (k) { return k + " " + (dist[k] || 0); }).join(", ")) + '">' + bar + "</div>" +
+    '<ul class="dist-key">' + key + "</ul>";
+}
+
+function ctDistHTML(dist, caption) {
+  var total = CT_ORDER.reduce(function (a, k) { return a + (dist[k] || 0); }, 0);
+  if (!total) return "";
+  var max = CT_ORDER.reduce(function (a, k) { return Math.max(a, dist[k] || 0); }, 0);
+  var rows = CT_ORDER.map(function (k) {
+    var n = dist[k] || 0;
+    return "<li>" + ctBadge(k) +
+      '<span class="track"><span class="fill" style="width:' + ((n / max) * 100).toFixed(2) + '%"></span></span>' +
+      '<span class="v">' + n + " · " + ((n / total) * 100).toFixed(0) + "%</span></li>";
+  }).join("");
+  return "<h3>" + esc(caption) + "</h3><ul class=\"ctbars\">" + rows + "</ul>";
+}
+
+function themeMicrobar(t) {
+  var counts = {}; REL_ORDER.forEach(function (k) { counts[k] = 0; });
+  t.key_insights.forEach(function (k) { counts[k.reliability]++; });
+  var total = t.key_insights.length || 1;
+  var segs = REL_ORDER.map(function (k) {
+    if (!counts[k]) return "";
+    return '<i class="' + REL_CLASS[k] + '" style="width:' + ((counts[k] / total) * 100).toFixed(2) + '%"></i>';
+  }).join("");
+  var lab = REL_ORDER.filter(function (k) { return counts[k]; })
+    .map(function (k) { return k + " " + counts[k]; }).join(", ");
+  return '<span class="microbar" role="img" aria-label="Composizione degli insight: ' + esc(lab) + '" title="' + esc(lab) + '">' + segs + "</span>";
+}
+
+/* ---------------- vista: home ---------------- */
+
+function viewHome() {
+  var m = D.meta, sa = D.source_assessment;
+  var h = "";
+
+  h += "<h1>" + esc(m.title) + "</h1>";
+  h += '<p class="meta-line">' +
+    "<span>" + esc(sa.channel) + "</span>" +
+    "<span>" + plural(m.transcripts_analysed, "record analizzato", "record analizzati") + "</span>" +
+    "<span>" + itDate(m.date_range.from) + " – " + itDate(m.date_range.to) + "</span>" +
+    "<span>" + plural(m.themes, "tema", "temi") + "</span>" +
+    "<span>" + m.observations_extracted + " osservazioni</span>" +
+    (m.episodes !== undefined ? "<span>" + m.episodes + " episodi + " + m.clips + " clip</span>" : "") +
+    (m.named_guests !== undefined ? "<span>" + m.named_guests + " ospiti nominati</span>" : "") +
+    (m.records_with_no_disagreement !== undefined ? "<span>" + m.records_with_no_disagreement + " record senza disaccordo</span>" : "") +
+    '<span class="mono">analisi del ' + itDate(m.generated_at) + "</span>" +
+    "</p>";
+
+  /* La valutazione della fonte apre la pagina: e il contesto che qualifica tutto il resto. */
+  h += '<section class="section" aria-labelledby="h-src"><h2 id="h-src">La fonte</h2>';
+  h += '<div class="card">';
+  h += '<p class="prose"><strong>Che cos’è.</strong> ' + esc(sa.what_it_is) + "</p>";
+  h += '<p class="prose"><strong>Come usarlo.</strong> ' + esc(sa.how_to_use_it) + "</p>";
+  h += '<p style="margin-bottom:0"><a href="' + hrefFor("/source") + '">Valutazione completa della fonte: distorsioni strutturali, credenziali, dove è effettivamente affidabile →</a></p>';
+  h += "</div>";
+  h += '<div class="warn" style="margin-top:12px"><h3>Nota dell’analista</h3><p class="prose" style="margin-bottom:0">' + esc(m.analyst_note) + "</p></div>";
+  h += "</section>";
+
+  /* Le due distribuzioni contano le key_observations dei record, non gli insight dei temi. */
+  h += '<section class="section" aria-labelledby="h-dist"><h2 id="h-dist">Distribuzione delle osservazioni <span class="n">' + m.observations_extracted + " osservazioni estratte dai record</span></h2>";
+  h += '<div class="two-col">';
+  h += '<div class="card">' + relDistHTML(m.reliability_distribution, "Per affidabilità") +
+    '<p class="note" style="margin-bottom:0"><span class="lab">Come leggerla</span>Le definizioni dei quattro livelli sono calibrate su questo corpus e si leggono nella legenda in alto. La distribuzione non è un voto alla fonte, e non è confrontabile con quella di un corpus di genere diverso.</p></div>';
+  if (m.claim_type_distribution) {
+    h += '<div class="card">' + ctDistHTML(m.claim_type_distribution, "Per tipo di affermazione") +
+      '<p class="note" style="margin-bottom:0"><span class="lab">Come leggerla</span>Asse indipendente dall’affidabilità: dice che <em>genere</em> di affermazione è, non quanto è solida. Non è una scala ordinata.</p></div>';
+  }
+  h += "</div></section>";
+
+  /* Il disaccordo registrato e una misura diretta di quanto la stanza si sia
+     contraddetta. Un record senza disaccordo e un dato, non un buco. */
+  if (IX.hasContested) {
+    var noDis = (m.records_with_no_disagreement !== undefined)
+      ? m.records_with_no_disagreement
+      : (IX.contestedRecords - IX.disagreeCount);
+    h += '<section class="section" aria-labelledby="h-dis"><h2 id="h-dis">Disaccordo nei record <span class="n">rilevato su ' +
+      IX.contestedRecords + " record</span></h2><div class=\"card\"><div class=\"statgrid\">" +
+      '<div><div class="n">' + IX.disagreeCount + '</div><div class="k">record con almeno un punto rimasto in disaccordo</div></div>' +
+      '<div><div class="n">' + noDis + '</div><div class="k">record in cui nessuno ha contraddetto nessuno</div></div>' +
+      (m.contested_points_recorded !== undefined
+        ? '<div><div class="n">' + m.contested_points_recorded + '</div><div class="k">punti in disaccordo registrati in tutto</div></div>'
+        : "") +
+      "</div>" +
+      '<p class="note" style="margin-bottom:0"><span class="lab">Come leggerlo</span>Un record senza disaccordo non è un campo mancante: significa che per l’intera durata nessun partecipante ha contraddetto un altro, ed è segnalato esplicitamente nell’analisi. ' +
+      '<button type="button" class="linkbtn" data-act="dis">' +
+      (ST.dis ? "Mostra di nuovo tutti i record" : "Isola i record con disaccordo") +
+      "</button>.</p></div></section>";
+  }
+
+  /* Indice dei temi, in ordine di rank: l'ordine e editoriale e non va riordinato. */
+  var filtered = 0;
+  var list = D.themes.map(function (t) {
+    var kept = t.key_insights.filter(passes).length;
+    if (!kept) filtered++;
+    var recs = t.video_ids.filter(function (id) {
+      var v = IX.videoById[id]; return v && videoVisible(v);
+    }).length;
+    return '<li class="theme-item' + (kept ? "" : " filtered-empty") + '">' +
+      '<span class="rank" aria-hidden="true">' + t.rank + "</span>" +
+      '<div class="body">' +
+      "<h3><a href=\"" + hrefFor("/theme/" + t.theme_id) + "\">" + esc(t.label) + "</a></h3>" +
+      '<p class="why">' + esc(t.why_it_matters) + "</p>" +
+      '<div class="foot">' +
+      "<span>" + plural(t.key_insights.length, "insight", "insight") + "</span>" +
+      "<span>" + plural(recs, "record", "record") + "</span>" +
+      (t.watch_outs && t.watch_outs.length ? "<span>" + plural(t.watch_outs.length, "avvertenza", "avvertenze") + "</span>" : "") +
+      themeMicrobar(t) +
+      (kept ? "" : '<span class="flag-empty">nessun insight sotto il filtro attivo</span>') +
+      "</div></div></li>";
+  }).join("");
+
+  h += '<section class="section" aria-labelledby="h-themes"><h2 id="h-themes">Temi <span class="n">' + D.themes.length + " temi, in ordine di rilevanza editoriale</span></h2>";
+  if (filtered) {
+    h += '<p class="empty-state" style="margin-bottom:10px">Il filtro attivo lascia senza insight ' +
+      plural(filtered, "tema", "temi") + ". Restano comunque in elenco, marcati, per non nascondere ciò che è stato escluso. " +
+      '<button type="button" class="linkbtn" data-act="reset">Azzera i filtri</button></p>';
+  }
+  h += '<ul class="theme-list">' + list + "</ul></section>";
+
+  /* Copertura: i record fuori da ogni tema restano raggiungibili, con la loro motivazione. */
+  if (D.videos_not_in_any_theme && D.videos_not_in_any_theme.length) {
+    h += '<section class="section" aria-labelledby="h-orph"><h2 id="h-orph">Record fuori da ogni tema <span class="n">' + D.videos_not_in_any_theme.length + "</span></h2>";
+    h += '<ul class="rows">' + D.videos_not_in_any_theme.map(function (n) {
+      return '<li><div class="main"><a href="' + hrefFor("/video/" + n.video_id) + '">' + esc(n.title) + "</a>" +
+        '<p class="note" style="margin-bottom:0"><span class="lab">Perché è fuori</span>' + esc(n.reason) + "</p></div></li>";
+    }).join("") + "</ul></section>";
+  }
+
+  h += '<section class="section" aria-labelledby="h-all"><h2 id="h-all">Tutti i record <span class="n">' + D.videos.length + ", in ordine cronologico</span></h2>" +
+    recordRowsHTML(D.videos) + "</section>";
+
+  return h;
+}
+
+/* I filtri sui record sono due (clip, disaccordo): il conteggio di cio che
+   nascondono si dichiara sempre, per non far sparire record in silenzio. */
+function hiddenRecordsHTML(hidden) {
+  if (!hidden) return "";
+  return '<p class="meta-line" style="margin-top:8px"><span>' + plural(hidden, "record nascosto", "record nascosti") +
+    ' dai filtri sui record.</span> <button type="button" class="linkbtn" data-act="resetrec">Mostra tutti i record</button></p>';
+}
+function noRecordsHTML() {
+  return '<p class="empty-state">Nessun record da mostrare con i filtri sui record attivi' +
+    (ST.dis && IX.hasContested ? " (solo record con disaccordo" + (!ST.clips && IX.hasClips ? ", clip escluse" : "") + ")" :
+      (!ST.clips && IX.hasClips ? " (clip escluse)" : "")) + ". " +
+    '<button type="button" class="linkbtn" data-act="resetrec">Mostra tutti i record</button>.</p>';
+}
+
+function recordRowsHTML(videos) {
+  var vis = videos.filter(videoVisible);
+  if (!vis.length) return noRecordsHTML();
+  var rows = vis.map(function (v) {
+    var themes = IX.themesByVideo[v.video_id] || [];
+    return '<li><div class="main"><a href="' + hrefFor("/video/" + v.video_id) + '">' + esc(v.title) + "</a> " +
+      (isClip(v) ? '<span class="badge clipmark">clip</span> ' : "") +
+      '<div class="meta-line"><span>' + itDate(v.published_at) + "</span>" +
+      '<span class="badge kind">' + esc(CONTENT_TYPE_IT[v.content_type] || v.content_type) + "</span>" +
+      "<span>" + plural(v.key_observations.length, "osservazione", "osservazioni") + "</span>" +
+      "<span>" + (themes.length ? plural(themes.length, "tema", "temi") : "fuori da ogni tema") + "</span>" +
+      "</div></div></li>";
+  }).join("");
+  return '<ul class="rows">' + rows + "</ul>" + hiddenRecordsHTML(videos.length - vis.length);
+}
+
+/* ---------------- vista: tema ---------------- */
+
+function viewTheme(themeId) {
+  var t = IX.themeById[themeId];
+  if (!t) return notFound("Nessun tema con identificatore " + themeId + ".");
+  document.title = t.label + " — " + D.meta.title;
+
+  var h = '<p class="backlink"><a href="' + hrefFor("/") + '">← Tutti i temi</a></p>';
+  h += "<h1>" + esc(t.label) + "</h1>";
+  h += '<p class="meta-line"><span>rango editoriale ' + t.rank + " di " + D.themes.length + "</span>" +
+    "<span>" + plural(t.key_insights.length, "insight", "insight") + "</span>" +
+    "<span>" + plural(t.video_ids.length, "record", "record") + "</span>" +
+    '<span class="mono">' + esc(t.theme_id) + "</span></p>";
+  h += '<div class="card"><p class="prose">' + esc(t.description) + "</p>" +
+    '<p class="prose" style="margin-bottom:0"><strong>Perché conta.</strong> ' + esc(t.why_it_matters) + "</p></div>";
+
+  var kept = t.key_insights.filter(passes);
+  h += '<section class="section" aria-labelledby="h-ins"><h2 id="h-ins">Insight <span class="n">' +
+    (kept.length === t.key_insights.length ? t.key_insights.length + " nel tema" : kept.length + " di " + t.key_insights.length + " sotto il filtro attivo") +
+    "</span></h2>";
+  if (!kept.length) {
+    h += '<p class="empty-state">Tutti gli ' + t.key_insights.length + " insight di questo tema sono esclusi dal filtro attivo. " +
+      '<button type="button" class="linkbtn" data-act="reset">Azzera i filtri</button> per rivederli.</p>';
+  } else {
+    h += kept.map(insightHTML).join("");
+  }
+  h += "</section>";
+
+  if (t.watch_outs && t.watch_outs.length) {
+    h += '<section class="section"><div class="warn"><h3>Da scartare in questo tema <span class="n">' + t.watch_outs.length + "</span></h3><ul>" +
+      t.watch_outs.map(function (w) { return '<li class="prose">' + esc(w) + "</li>"; }).join("") + "</ul></div></section>";
+  }
+
+  var vids = t.video_ids.map(function (id) { return IX.videoById[id]; }).filter(Boolean);
+  h += '<section class="section" aria-labelledby="h-rec"><h2 id="h-rec">Record del tema <span class="n">' + vids.length + "</span></h2>" +
+    recordGridHTML(vids) + "</section>";
+  return h;
+}
+
+function insightHTML(k) {
+  var h = '<article class="item ' + REL_CLASS[k.reliability] + '">';
+  h += '<p class="txt">' + esc(k.insight) + "</p>";
+  h += '<div class="badges">' + relBadge(k.reliability) + ctBadge(k.claim_type) + "</div>";
+  /* La nota critica e sempre visibile: e il valore aggiunto rispetto a un riassunto. */
+  h += '<div class="note"><span class="lab">Nota critica</span>' + esc(k.note) + "</div>";
+  h += videoChips(k.videos);
+  return h + "</article>";
+}
+
+function recordGridHTML(videos) {
+  var vis = videos.filter(videoVisible);
+  if (!vis.length) return noRecordsHTML();
+  var cards = vis.map(function (v) {
+    return '<a class="rec' + (isClip(v) ? " is-clip" : "") + '" href="' + hrefFor("/video/" + v.video_id) + '">' +
+      '<div class="t">' + esc(v.title) + "</div>" +
+      '<p class="th">' + esc(v.thesis) + "</p>" +
+      '<div class="f"><span>' + itDate(v.published_at) + "</span>" +
+      (isClip(v) ? '<span class="badge clipmark">clip</span>' : '<span class="badge kind">' + esc(CONTENT_TYPE_IT[v.content_type] || v.content_type) + "</span>") +
+      "<span>" + plural(v.key_observations.length, "osservazione", "osservazioni") + "</span>" +
+      (Array.isArray(v.contested_points)
+        ? "<span>" + (v.contested_points.length ? plural(v.contested_points.length, "punto in disaccordo", "punti in disaccordo") : "nessun disaccordo") + "</span>"
+        : "") +
+      "</div></a>";
+  }).join("");
+  return '<div class="rec-grid">' + cards + "</div>" + hiddenRecordsHTML(videos.length - vis.length);
+}
+
+/* ---------------- vista: scheda record ---------------- */
+
+function viewVideo(videoId) {
+  var v = IX.videoById[videoId];
+  if (!v) {
+    var n = IX.notInTheme[videoId];
+    if (n) return notFound("Il record " + n.title + " è dichiarato fuori da ogni tema ma non ha una scheda in questo file.");
+    return notFound("Nessun record con identificatore " + videoId + ".");
+  }
+  document.title = v.title + " — " + D.meta.title;
+
+  var themes = IX.themesByVideo[v.video_id] || [];
+  var orphan = IX.notInTheme[v.video_id];
+  var h = '<p class="backlink"><a href="' + hrefFor("/") + '">← Tutti i temi</a></p>';
+
+  h += '<div class="rec-head">';
+  /* Il titolo originale non si ripulisce: maiuscole ed emoji sono un dato. */
+  h += "<h1>" + esc(v.title) + "</h1>";
+  h += '<p class="meta-line"><span>' + itDate(v.published_at) + "</span>" +
+    (isClip(v) ? '<span class="badge clipmark">clip</span>' : "") +
+    '<span class="badge kind">' + esc(CONTENT_TYPE_IT[v.content_type] || v.content_type) + "</span>" +
+    "<span>" + plural(v.key_observations.length, "osservazione", "osservazioni") + "</span>" +
+    '<span><a href="' + ytUrl(v.video_id) + '" rel="noopener noreferrer" target="_blank">Guarda su YouTube ↗</a></span>' +
+    '<span class="mono">' + esc(v.file) + "</span></p>";
+  if (has(v.format_note)) {
+    h += '<p class="meta-line"><span><strong>Formato:</strong> ' + esc(v.format_note) + "</span></p>";
+  }
+  if (isClip(v)) {
+    h += '<p class="note" style="max-width:74ch"><span class="lab">Attenzione</span>Questo record è una clip, non un episodio: un estratto breve con una o poche osservazioni per costruzione. Non va contato insieme agli episodi nelle statistiche.</p>';
+  }
+
+  /* A quali temi appartiene: calcolato invertendo themes[].video_ids. */
+  if (themes.length) {
+    h += '<div class="chips-videos">' + themes.map(function (t) {
+      return '<a class="vchip" href="' + hrefFor("/theme/" + t.theme_id) + '">tema: ' + esc(t.label) + "</a>";
+    }).join("") + "</div>";
+  } else if (orphan) {
+    h += '<p class="note" style="max-width:74ch"><span class="lab">Fuori da ogni tema</span>' + esc(orphan.reason) + "</p>";
+  } else {
+    h += '<p class="note" style="max-width:74ch"><span class="lab">Temi</span>Questo record non è associato ad alcun tema trasversale.</p>';
+  }
+  h += "</div>";
+
+  /* Chi parla, e perche il suo giudizio pesa. */
+  var hosts = v.hosts || [];
+  var guests = v.guests || [];
+  if (hosts.length || guests.length || v.hosts !== undefined || v.guests !== undefined) {
+    h += '<section class="section" aria-labelledby="h-people"><h2 id="h-people">Chi parla</h2>';
+    h += '<p class="meta-line"><span><strong>Conduzione:</strong> ' +
+      (hosts.length ? esc(hosts.join(", ")) : '<span class="na">nessun conduttore nominato in questo record</span>') + "</span></p>";
+    if (guests.length) {
+      /* expertise_basis riporta cio che dichiara l'episodio; credibility_note
+         porta un giudizio esterno ai transcript. Le due cose restano separate
+         e riconoscibili, altrimenti si attribuirebbe all'episodio qualcosa che
+         l'episodio non contiene. */
+      h += '<div class="guest-grid">' + guests.map(function (g) {
+        return '<div class="guest"><p class="gn">' + esc(g.name) +
+          (has(g.credibility_note) ? ' <span class="ext-mark">↗ esterna</span>' : "") + "</p>" +
+          '<p class="ga"><span class="lab">Affiliazione</span>' + orNA(g.affiliation, "non dichiarata nell’episodio — l’assenza impedisce di valutare gli interessi in gioco") + "</p>" +
+          '<p class="ge"><span class="lab">Perché il suo giudizio pesa, secondo l’episodio</span>' + orNA(g.expertise_basis, "non dichiarato nell’episodio") + "</p>" +
+          credibilityHTML(g) + "</div>";
+      }).join("") + "</div>";
+      if (IX.hasCredibility) {
+        h += '<p class="note" style="max-width:74ch"><span class="lab">Due informazioni diverse</span>' +
+          "«Perché il suo giudizio pesa» riporta ciò che l’episodio stesso dichiara. Il blocco marcato <em>valutazione esterna ai transcript</em> riporta invece un giudizio che dall’episodio non viene: track record pubblico, affiliazioni, credenziali verificate o loro assenza. Non è un’accusa e non è un avallo per definizione — dice ciò che dice, in entrambe le direzioni.</p>";
+      }
+    } else {
+      h += '<p class="empty-state">Nessun ospite nominato in questo record.</p>';
+    }
+    h += "</section>";
+  }
+
+  h += '<section class="section" aria-labelledby="h-thesis"><h2 id="h-thesis">Tesi</h2><div class="card">' +
+    '<p class="prose">' + esc(v.thesis) + "</p>" +
+    '<p class="prose" style="margin-bottom:0"><strong>Perché conta.</strong> ' + esc(v.why_it_matters) + "</p></div>";
+  /* Il conflitto di interesse va mostrato, non archiviato in fondo. */
+  h += '<div class="commercial" style="margin-top:12px"><h3 style="font-size:.9rem;margin-bottom:.3em">Angolo commerciale</h3><p style="margin-bottom:0">' +
+    (has(v.commercial_angle) ? esc(v.commercial_angle) : '<span class="na">Nessun conflitto di interesse osservabile segnalato per questo record.</span>') + "</p></div>";
+  h += "</section>";
+
+  var kept = v.key_observations.filter(passes);
+  h += '<section class="section" aria-labelledby="h-obs"><h2 id="h-obs">Osservazioni <span class="n">' +
+    (kept.length === v.key_observations.length ? v.key_observations.length : kept.length + " di " + v.key_observations.length + " sotto il filtro attivo") +
+    "</span></h2>";
+  if (!kept.length) {
+    h += '<p class="empty-state">Tutte le ' + v.key_observations.length + " osservazioni di questo record sono escluse dal filtro attivo. " +
+      '<button type="button" class="linkbtn" data-act="reset">Azzera i filtri</button> per rivederle.</p>';
+  } else {
+    h += kept.map(observationHTML).join("");
+  }
+  h += "</section>";
+
+  /* Un contested_points vuoto e un dato: dichiararlo, non nascondere la sezione. */
+  if (Array.isArray(v.contested_points)) {
+    h += '<section class="section" aria-labelledby="h-cont"><h2 id="h-cont">Punti in disaccordo <span class="n">' + v.contested_points.length + "</span></h2>";
+    if (v.contested_points.length) {
+      h += '<ul class="rows">' + v.contested_points.map(function (c) {
+        return '<li><div class="main prose">' + esc(c) + "</div></li>";
+      }).join("") + "</ul>";
+    } else {
+      h += '<p class="empty-state">In questo record non è stato registrato alcun disaccordo: nessun partecipante ha contraddetto un altro, e la questione non è rimasta aperta su nessun punto. In un formato di conversazione è un segnale di consenso della stanza, non un dato mancante.</p>';
+    }
+    h += "</section>";
+  }
+
+  /* Le cifre restano stringhe: tabella, mai grafico. */
+  h += '<section class="section" aria-labelledby="h-fig"><h2 id="h-fig">Cifre citate <span class="n">' + (v.figures_cited || []).length + "</span></h2>";
+  if (v.figures_cited && v.figures_cited.length) {
+    h += '<div class="tablewrap"><table class="figures"><thead><tr>' +
+      "<th>A cosa si riferisce</th><th>Valore come enunciato</th><th>Fonte citata nell’episodio</th>" +
+      "</tr></thead><tbody>" +
+      v.figures_cited.map(function (f) {
+        var src = has(f.attributed_source);
+        return "<tr><td>" + esc(f.claim) + "</td>" +
+          '<td class="val">' + esc(f.value) + "</td>" +
+          '<td class="' + (src ? "src-yes" : "src-no") + '">' + (src ? esc(f.attributed_source) : "nessuna fonte citata") + "</td></tr>";
+      }).join("") + "</tbody></table></div>" +
+      '<p class="note" style="max-width:74ch"><span class="lab">Come leggerle</span>I valori sono riportati così come pronunciati, con unità e valuta nel testo: non sono numeri normalizzati e in alcuni casi documentati l’unità è sbagliata. Vanno verificati prima dell’uso.</p>';
+  } else {
+    h += '<p class="empty-state">Nessuna cifra citata in questo record.</p>';
+  }
+  h += "</section>";
+
+  var errs = D.known_errors_and_distortions.filter(function (e) { return e.video === v.video_id; });
+  var vers = D.verify_before_using.filter(function (x) { return x.video === v.video_id; });
+  if (errs.length || vers.length) {
+    h += '<section class="section" aria-labelledby="h-flags"><h2 id="h-flags">Segnalazioni su questo record</h2>';
+    if (errs.length) {
+      h += '<div class="warn" style="margin-bottom:12px"><h3>Errori accertati <span class="n">' + errs.length + "</span></h3><ul>" +
+        errs.map(function (e) { return '<li class="prose">' + esc(e.error) + "</li>"; }).join("") + "</ul></div>";
+    }
+    if (vers.length) {
+      h += '<div class="card"><h3 style="font-size:.95rem">Da verificare prima dell’uso</h3><ul class="rows">' +
+        vers.map(function (x) {
+          return '<li><div class="main"><div class="prose">' + esc(x.claim) + "</div>" +
+            '<div class="note" style="margin-bottom:0"><span class="lab">Cosa dipende da questa affermazione</span>' + esc(x.why) + "</div></div></li>";
+        }).join("") + "</ul></div>";
+    }
+    h += "</section>";
+  }
+
+  h += '<section class="section"><p class="meta-line"><span><strong>Tag descrittivi del record</strong> (assegnati in estrazione, vocabolario non allineato a quello dei temi: non sono una chiave di raggruppamento)</span></p><div class="badges">' +
+    '<span class="badge tag">' + esc(v.primary_theme) + "</span>" +
+    (v.secondary_themes || []).map(function (s) { return '<span class="badge tag">' + esc(s) + "</span>"; }).join("") +
+    "</div></section>";
+
+  return h;
+}
+
+function observationHTML(o) {
+  var h = '<article class="item ' + REL_CLASS[o.reliability] + '">';
+  h += '<p class="txt">' + esc(o.observation) + "</p>";
+  h += '<div class="badges">' +
+    (has(o.attributed_to) ? '<span class="attr">' + esc(o.attributed_to) + "</span>" : "") +
+    relBadge(o.reliability) + ctBadge(o.claim_type) + "</div>";
+  if (has(o.supporting_data)) {
+    h += '<div class="support"><span class="lab">Dati portati a sostegno</span>' + esc(o.supporting_data) + "</div>";
+  }
+  /* reliability_note e sempre presente e sempre visibile, senza interazione. */
+  h += '<div class="note"><span class="lab">Nota critica</span>' + esc(o.reliability_note) + "</div>";
+  return h + "</article>";
+}
+
+/* ---------------- vista: fonte ---------------- */
+
+function viewSource() {
+  var sa = D.source_assessment, m = D.meta;
+  document.title = "La fonte — " + m.title;
+  var h = '<p class="backlink"><a href="' + hrefFor("/") + '">← Tutti i temi</a></p>';
+  h += "<h1>La fonte</h1>";
+  h += '<p class="meta-line"><span>' + esc(sa.channel) + '</span><span class="mono">' + esc(sa.channel_id) + "</span></p>";
+
+  h += '<div class="card"><p class="prose"><strong>Che cos’è.</strong> ' + esc(sa.what_it_is) + "</p>" +
+    '<p class="prose"><strong>Credenziali dichiarate.</strong> ' + esc(sa.host_credential_claimed) + "</p>" +
+    '<p class="prose" style="margin-bottom:0"><strong>Come usarlo.</strong> ' + esc(sa.how_to_use_it) + "</p></div>";
+
+  h += '<section class="section" aria-labelledby="h-bias"><h2 id="h-bias">Distorsioni strutturali <span class="n">' + sa.structural_bias.length + "</span></h2>" +
+    '<div class="warn"><ul>' + sa.structural_bias.map(function (b) { return '<li class="prose">' + esc(b) + "</li>"; }).join("") + "</ul></div></section>";
+
+  h += '<section class="section" aria-labelledby="h-good"><h2 id="h-good">Dove è effettivamente affidabile <span class="n">' + sa.where_it_is_genuinely_good.length + "</span></h2>" +
+    '<div class="card"><ul style="margin-bottom:0">' + sa.where_it_is_genuinely_good.map(function (g) { return '<li class="prose">' + esc(g) + "</li>"; }).join("") + "</ul></div></section>";
+
+  h += '<section class="section" aria-labelledby="h-meth"><h2 id="h-meth">Come è stata fatta l’analisi</h2><div class="card">' +
+    '<p class="prose"><strong>Nota dell’analista.</strong> ' + esc(m.analyst_note) + "</p>" +
+    '<p class="prose"><strong>Verifiche indipendenti.</strong> ' + esc(m.spot_checks_performed) + "</p>" +
+    '<p class="prose"><strong>Cosa è stato escluso.</strong> ' + esc(m.excluded) + "</p>" +
+    '<p class="meta-line" style="margin-bottom:0">' +
+    "<span>" + m.transcripts_in_folder + " file in cartella</span>" +
+    "<span>" + m.transcripts_analysed + " analizzati</span>" +
+    "<span>copertura " + itDate(m.date_range.from) + " – " + itDate(m.date_range.to) + "</span>" +
+    "<span>analisi generata il " + itDate(m.generated_at) + "</span>" +
+    '<span class="mono">' + esc(m.source_folder) + "</span></p></div></section>";
+  return h;
+}
+
+/* ---------------- viste: coda di verifica, errori ---------------- */
+
+function viewVerify() {
+  document.title = "Da verificare — " + D.meta.title;
+  var h = '<p class="backlink"><a href="' + hrefFor("/") + '">← Tutti i temi</a></p>';
+  h += "<h1>Da verificare prima dell’uso</h1>";
+  h += '<p class="prose">Affermazioni ad alto impatto e bassa verificabilità: se cadono, cade una tesi.</p>';
+  h += '<section class="section"><ul class="rows">' + D.verify_before_using.map(function (x) {
+    return '<li><div class="main"><div class="prose"><strong>' + esc(x.claim) + "</strong></div>" +
+      '<div class="note"><span class="lab">Cosa dipende da questa affermazione</span>' + esc(x.why) + "</div>" +
+      videoChips([x.video]) + "</div></li>";
+  }).join("") + "</ul></section>";
+  return h;
+}
+
+function viewErrors() {
+  document.title = "Errori noti — " + D.meta.title;
+  var h = '<p class="backlink"><a href="' + hrefFor("/") + '">← Tutti i temi</a></p>';
+  h += "<h1>Errori e distorsioni accertati</h1>";
+  h += '<p class="prose">Errori già verificati nel corpus, non sospetti. Diversi sono contraddizioni interne al singolo record, quindi verificabili nel transcript stesso.</p>';
+  h += '<section class="section"><ul class="rows">' + D.known_errors_and_distortions.map(function (e) {
+    return '<li><div class="main"><div class="prose">' + esc(e.error) + "</div>" + videoChips([e.video]) + "</div></li>";
+  }).join("") + "</ul></section>";
+  return h;
+}
+
+/* ---------------- vista: ospiti ---------------- */
+
+function viewGuests() {
+  if (!IX.hasGuests) return notFound("Questo corpus non ha un indice degli ospiti.");
+  document.title = "Ospiti — " + D.meta.title;
+  var h = '<p class="backlink"><a href="' + hrefFor("/") + '">← Tutti i temi</a></p>';
+  h += "<h1>Ospiti</h1>";
+  h += '<p class="prose">Ordinati per numero di apparizioni. I nomi vengono da transcript automatici e alcuni sono storpiati o parziali: sono riportati come sono, senza normalizzarli né completarli.</p>';
+  if (IX.hasCredibility) {
+    h += '<p class="prose">Per una parte degli ospiti l’analisi riporta anche una <strong>valutazione esterna ai transcript</strong>, marcata come tale: non viene dagli episodi ma da conoscenza indipendente sulla persona. È l’informazione che decide quanto peso dare a ciò che quella persona afferma, e vale in entrambe le direzioni.</p>';
+  }
+  h += '<section class="section"><ul class="rows">' + D.guest_index.map(function (g) {
+    var vids = g.video_ids.filter(function (id) {
+      var v = IX.videoById[id]; return v && videoVisible(v);
+    });
+    return '<li><div class="main"><p style="margin-bottom:2px"><strong>' + esc(g.name) + "</strong>" +
+      (has(g.credibility_note) ? ' <span class="ext-mark">↗ esterna</span>' : "") + "</p>" +
+      '<p class="ga" style="font-size:.85rem;color:var(--muted);margin-bottom:3px"><span class="lab">Affiliazione</span>' +
+      orNA(g.affiliation, "non dichiarata negli episodi") + "</p>" +
+      '<p style="font-size:.85rem;color:var(--muted);margin-bottom:0"><span class="lab">Perché il suo giudizio pesa, secondo gli episodi</span>' +
+      orNA(g.expertise_basis, "non dichiarato negli episodi") + "</p>" +
+      credibilityHTML(g) +
+      (vids.length ? videoChips(vids) : '<p class="meta-line" style="margin-top:6px">Tutte le sue apparizioni sono escluse dai filtri sui record attivi. <button type="button" class="linkbtn" data-act="resetrec">Mostra tutti i record</button></p>') +
+      '</div><div class="side">' + plural(g.appearances, "apparizione", "apparizioni") + "</div></li>";
+  }).join("") + "</ul></section>";
+  return h;
+}
+
+/* ---------------- vista: ricerca ---------------- */
+
+var HIT_LABEL = {
+  theme: "Tema", insight: "Insight di tema", watch_out: "Avvertenza di tema",
+  record: "Record", observation: "Osservazione", contested: "Punto in disaccordo",
+  guest: "Ospite", external: "Valutazione esterna ai transcript",
+  figure: "Cifra citata", error: "Errore accertato", verify: "Da verificare"
+};
+var HIT_ORDER = ["theme", "insight", "watch_out", "record", "observation", "contested", "figure", "guest", "external", "verify", "error"];
+
+function highlight(text, q) {
+  var e = esc(text);
+  if (!q) return e;
+  var eq = esc(q).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  try {
+    return e.replace(new RegExp(eq, "gi"), function (m) { return "<mark>" + m + "</mark>"; });
+  } catch (err) { return e; }
+}
+
+function searchResultsHTML() {
+  var q = ST.q.trim();
+  if (q.length < 2) {
+    return '<p class="empty-state">Scrivi almeno due caratteri. La ricerca copre temi, insight e loro note, record, osservazioni e loro note, punti in disaccordo, cifre, ospiti' +
+      (IX.hasCredibility ? " e loro valutazioni esterne" : "") + ", errori accertati e coda di verifica.</p>";
+  }
+  var lc = q.toLowerCase();
+  var groups = {};
+  var total = 0;
+  IX.search.forEach(function (hit) {
+    if (hit.lc.indexOf(lc) === -1) return;
+    (groups[hit.type] || (groups[hit.type] = [])).push(hit);
+    total++;
+  });
+  if (!total) {
+    return '<p class="empty-state">Nessun risultato per <strong>' + esc(q) + "</strong>.</p>";
+  }
+  var h = '<p class="meta-line" style="margin-bottom:12px">' + plural(total, "risultato", "risultati") + " per <strong>" + esc(q) + "</strong></p>";
+  HIT_ORDER.forEach(function (type) {
+    var g = groups[type];
+    if (!g || !g.length) return;
+    var shown = g.slice(0, 40);
+    h += '<section class="section" aria-label="' + esc(HIT_LABEL[type]) + '"><h2>' + esc(HIT_LABEL[type]) +
+      ' <span class="n">' + g.length + "</span></h2><div>";
+    h += shown.map(function (hit) {
+      return '<div class="hit"><div class="where"><a href="' + hit.href + '">' + esc(hit.label) + "</a></div>" +
+        '<div class="txt">' + highlight(hit.text, q) + "</div></div>";
+    }).join("");
+    if (g.length > shown.length) {
+      h += '<p class="meta-line" style="margin-top:8px">e altri ' + (g.length - shown.length) + " risultati in questa categoria.</p>";
+    }
+    h += "</div></section>";
+  });
+  return h;
+}
+
+function viewSearch() {
+  document.title = "Ricerca — " + D.meta.title;
+  var h = '<p class="backlink"><a href="' + hrefFor("/") + '">← Tutti i temi</a></p>';
+  h += "<h1>Ricerca</h1>";
+  h += '<div id="results">' + searchResultsHTML() + "</div>";
+  return h;
+}
+
+function notFound(msg) {
+  document.title = "Non trovato — " + (D ? D.meta.title : "");
+  return "<h1>Non trovato</h1><p class=\"empty-state\">" + esc(msg) + "</p>" +
+    '<p class="backlink"><a href="' + hrefFor("/") + '">← Torna all’indice dei temi</a></p>';
+}
+
+/* ---------------- render e routing ---------------- */
+
+var lastPath = null;
+
+function viewFor(r) {
+  var p = r.parts;
+  if (!p.length) return viewHome();
+  switch (p[0]) {
+    case "theme": return p[1] ? viewTheme(p[1]) : notFound("Manca l’identificatore del tema.");
+    case "video": return p[1] ? viewVideo(p[1]) : notFound("Manca l’identificatore del record.");
+    case "source": return viewSource();
+    case "verify": return viewVerify();
+    case "errors": return viewErrors();
+    case "guests": return viewGuests();
+    case "search": return viewSearch();
+    default: return notFound("Percorso sconosciuto: " + r.path);
+  }
+}
+
+function render() {
+  var r = parseHash();
+  readFiltersFromHash(r.params);
+
+  var qEl = el("q");
+  var hadFocus = qEl && document.activeElement === qEl;
+  var caret = qEl ? qEl.selectionStart : 0;
+
+  if (!r.parts.length) document.title = D.meta.title;
+
+  var body = viewFor(r);
+  var app = el("app");
+  app.innerHTML = chromeHTML(r) + '<main id="main" class="wrap">' + body +
+    '<footer class="pagefoot">Visualizzatore della sintesi critica del corpus <span class="mono">' + esc(D.meta.corpus_id) +
+    "</span>. I contenuti sono quelli del file di analisi, riportati senza riscritture: giudizi di affidabilità e note critiche fanno parte del contenuto, non sono metadati accessori.</footer></main>";
+  app.hidden = false;
+
+  wire();
+
+  if (hadFocus) {
+    var q2 = el("q");
+    if (q2) { q2.focus(); try { q2.setSelectionRange(caret, caret); } catch (err) {} }
+  }
+  if (lastPath !== r.path) {
+    if (!hadFocus) window.scrollTo(0, 0);
+    lastPath = r.path;
+  }
+}
+
+/* ---------------- eventi ---------------- */
+
+var searchTimer = null;
+
+function wire() {
+  var app = el("app");
+
+  app.querySelectorAll("[data-rel]").forEach(function (b) {
+    b.addEventListener("click", function () { toggleRel(b.getAttribute("data-rel")); });
+  });
+  app.querySelectorAll("[data-ct]").forEach(function (b) {
+    b.addEventListener("click", function () { toggleCt(b.getAttribute("data-ct")); });
+  });
+  var ct = el("clipToggle");
+  if (ct) ct.addEventListener("click", toggleClips);
+  var dt = el("disToggle");
+  if (dt) dt.addEventListener("click", toggleDis);
+  var rf = el("resetFilters");
+  if (rf) rf.addEventListener("click", resetFilters);
+  app.querySelectorAll("[data-act]").forEach(function (b) {
+    b.addEventListener("click", function () {
+      var a = b.getAttribute("data-act");
+      if (a === "reset") resetFilters();
+      else if (a === "clips") toggleClips();
+      else if (a === "dis") toggleDis();
+      else if (a === "resetrec") resetRecordFilters();
+    });
+  });
+
+  var q = el("q");
+  if (q) {
+    q.addEventListener("input", function () {
+      if (searchTimer) clearTimeout(searchTimer);
+      searchTimer = setTimeout(function () { onSearchInput(q.value); }, 150);
+    });
+    q.addEventListener("keydown", function (e) {
+      if (e.key === "Escape") { q.value = ""; onSearchInput(""); }
+    });
+  }
+}
+
+/* Digitare non ricostruisce la pagina: se siamo gia in ricerca si aggiorna il solo elenco. */
+function onSearchInput(value) {
+  ST.q = value;
+  var onSearch = currentPath().indexOf("/search") === 0;
+  if (!value.trim()) {
+    if (onSearch) {
+      var res0 = el("results");
+      if (res0) res0.innerHTML = searchResultsHTML();
+      if (history.replaceState) history.replaceState(null, "", hrefFor("/search"));
+    }
+    return;
+  }
+  var target = hrefFor("/search", ["q=" + encodeURIComponent(value)]);
+  if (onSearch) {
+    if (history.replaceState) history.replaceState(null, "", target);
+    var res = el("results");
+    if (res) res.innerHTML = searchResultsHTML();
+  } else {
+    location.hash = target.replace(/^#/, "");
+  }
+}
+
+/* ---------------- avvio ---------------- */
+
+function start(data) {
+  D = data;
+  buildIndexes();
+  el("boot").hidden = true;
+  document.title = D.meta.title;
+  window.addEventListener("hashchange", render);
+  render();
+}
+
+function bootError(detail) {
+  var b = el("boot");
+  b.innerHTML =
+    '<div class="fallback">' +
+    "<h1>Dati non caricati</h1>" +
+    "<p>Questa pagina è il visualizzatore, ed è una sola per tutti i corpus: i dati non stanno accanto a lei sul disco, " +
+    "ma in <code>reports/youtube/&lt;canale&gt;/synthesis.json</code>. Normalmente è il server dell’app ad affiancarglieli. " +
+    "Se l’hai aperta con un doppio clic non c’è nessun server, e il browser blocca comunque la lettura dei file locali: " +
+    "è una policy di sicurezza, non un errore della pagina.</p>" +
+    "<h2>Tre modi per procedere</h2>" +
+    "<h3>1. Aprila dall’app</h3>" +
+    "<p>Avvia l’app e vai in <strong>Reports</strong>: la pagina riceve il corpus del canale che scegli, senza altri passaggi.</p>" +
+    "<h3>2. Carica il file a mano</h3>" +
+    "<p>Scegli un <code>synthesis.json</code> da <code>reports/youtube/</code>. La pagina funziona per intero, esattamente come se fosse stata servita.</p>" +
+    '<p><input type="file" id="pick" accept=".json,application/json"></p>' +
+    '<p id="pickErr" class="na" hidden></p>' +
+    "<h3>3. Servi una cartella che contenga il JSON</h3>" +
+    "<p>Copia questa pagina accanto a un <code>synthesis.json</code>, poi da quella cartella:</p>" +
+    "<pre>python -m http.server 8000</pre>" +
+    "<p>poi apri <code>http://localhost:8000/</code>.</p>" +
+    '<p class="meta-line">Dettaglio tecnico: ' + esc(detail) + "</p>" +
+    "</div>";
+  b.hidden = false;
+  el("pick").addEventListener("change", function (e) {
+    var f = e.target.files && e.target.files[0];
+    if (!f) return;
+    var fr = new FileReader();
+    fr.onload = function () {
+      try {
+        var data = JSON.parse(String(fr.result));
+        if (!data || !data.meta || !data.themes || !data.videos) throw new Error("Il file non ha la struttura attesa (meta, themes, videos).");
+        start(data);
+      } catch (err) {
+        var pe = el("pickErr");
+        pe.hidden = false;
+        pe.textContent = "Il file scelto non è utilizzabile: " + err.message;
+      }
+    };
+    fr.onerror = function () {
+      var pe = el("pickErr");
+      pe.hidden = false;
+      pe.textContent = "Lettura del file non riuscita.";
+    };
+    fr.readAsText(f);
+  });
+}
+
+/* Si provano entrambi i nomi possibili: il primo che risponde vince. */
+function boot() {
+  var errors = [];
+  var i = 0;
+  function next() {
+    if (i >= CANDIDATES.length) {
+      bootError(errors.join(" | ") || "nessun file di dati raggiungibile");
+      return;
+    }
+    var url = CANDIDATES[i++];
+    fetch(url, { cache: "no-cache" }).then(function (res) {
+      if (!res.ok) throw new Error(url + " → HTTP " + res.status);
+      return res.json();
+    }).then(function (data) {
+      start(data);
+    }).catch(function (err) {
+      errors.push(String(err && err.message ? err.message : err));
+      next();
+    });
+  }
+  if (typeof fetch !== "function") {
+    bootError("fetch non disponibile in questo browser");
+    return;
+  }
+  next();
+}
+
+boot();
+</script>
+</body>
+</html>
