@@ -1,0 +1,293 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://local/youtube-corpus-synthesis.v2.schema.json",
+  "title": "YouTube corpus synthesis (v2.1)",
+  "description": "Schema condiviso dai file di sintesi prodotti per piu canali YouTube (Statrys, ChinaTalk, Cyrus Janssen). v2.1 aggiunge il solo campo opzionale person.credibility_note; v2 estendeva v1 (che copriva il solo corpus Statrys) per reggere anche corpus di interviste lunghe con ospiti nominati: i campi nuovi - guests, hosts, contested_points, claim_type, guest_index - sono tutti OPZIONALI, cosi lo stesso schema e la stessa pagina di navigazione valgono per entrambi i file. Il documento ha due livelli paralleli che vanno tenuti distinti: (1) `themes`, la sintesi trasversale scritta a mano, dove ogni tema aggrega piu video; (2) `videos`, la scheda per singolo transcript, estratta automaticamente. I due livelli si collegano solo tramite `video_id`. ATTENZIONE: `videos[].primary_theme` NON e una chiave verso `themes[].theme_id` (vedi la nota sul campo).",
+  "type": "object",
+  "required": ["meta", "source_assessment", "reliability_scale", "themes", "verify_before_using", "known_errors_and_distortions", "videos"],
+  "additionalProperties": false,
+
+  "$comment": "MIGRAZIONE v1 -> v2, per chi avesse gia scritto codice sulla v1: `source_assessment.what_it_sells` e stato rinominato `what_it_is` (non tutti i canali vendono qualcosa); `videos[].why_it_matters_for_business` e stato rinominato `why_it_matters`; `meta.corpus_id` e ora obbligatorio; l'enum di `content_type` si e allargato. Entrambi i file distribuiti sono gia stati rigenerati in forma v2: non esiste piu nessun file in forma v1.",
+
+  "$defs": {
+
+    "videoId": {
+      "$comment": "Chiave primaria di tutto il documento. E l'ID YouTube a 11 caratteri: puo iniziare con '-' o '_' (es. '-po2y1lRN8E', '_FUv6Eb7FuM', '-kP-kkjzO6E', '-uXyi4ft8U4'). Non trattarlo come identificatore CSS/JS senza escaping.",
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_-]{11}$",
+      "description": "ID del video su YouTube. URL ricostruibile come https://www.youtube.com/watch?v={video_id}"
+    },
+
+    "reliability": {
+      "$comment": "Scala ordinale a 4 livelli, dal piu solido al meno solido nell'ordine di enumerazione. Usarla per filtri e colori; le definizioni testuali stanno in /reliability_scale. ATTENZIONE alla lettura comparativa fra corpus: la stessa etichetta significa cose diverse su generi diversi. In un canale marketing 'plausible_unverified' segnala un'affermazione non sostanziata; in un podcast di interviste segnala il giudizio professionale di un esperto nel proprio campo. Non confrontare le distribuzioni di due corpus senza dirlo.",
+      "type": "string",
+      "enum": ["verifiable", "plausible_unverified", "likely_exaggerated", "misleading_or_wrong"],
+      "description": "Giudizio di affidabilita assegnato in fase di analisi."
+    },
+
+    "claimType": {
+      "$comment": "Asse introdotto in v2 e presente solo dove il corpus lo giustifica. In un archivio di interviste e piu informativo di `reliability`: separa cio che e affermato come fatto da cio che e previsione, lettura o raccomandazione. Assente nel corpus Statrys, dove quasi tutto e asserzione fattuale e la distinzione non discriminerebbe nulla.",
+      "type": "string",
+      "enum": ["empirical", "forecast", "interpretation", "recommendation", "anecdote"],
+      "description": "Che tipo di affermazione e. Le definizioni stanno in /claim_type_scale quando presente."
+    },
+
+    "isoDate": {
+      "type": "string",
+      "format": "date",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+      "description": "Data in formato YYYY-MM-DD."
+    },
+
+    "themeInsight": {
+      "$comment": "L'unita di contenuto del livello tematico. NON e la stessa cosa di videos[].key_observations[]: qui l'osservazione e gia sintetizzata e puo fondere piu video. Non sommare le due popolazioni.",
+      "type": "object",
+      "required": ["insight", "reliability", "note", "videos"],
+      "additionalProperties": false,
+      "properties": {
+        "insight": { "type": "string", "description": "L'osservazione sintetizzata, autosufficiente: si deve poter leggere fuori contesto." },
+        "reliability": { "$ref": "#/$defs/reliability" },
+        "claim_type": { "$ref": "#/$defs/claimType", "description": "Opzionale. Presente solo nei corpus in cui l'asse e stato applicato." },
+        "note": { "type": "string", "description": "Perche quel livello di affidabilita, e cosa andrebbe controllato in modo indipendente. E la parte critica: non ometterla nella UI, e il valore aggiunto rispetto a un riassunto qualunque." },
+        "videos": { "type": "array", "minItems": 1, "description": "Video da cui deriva l'insight. Sottoinsieme (non necessariamente proprio) di themes[].video_ids.", "items": { "$ref": "#/$defs/videoId" } }
+      }
+    },
+
+    "theme": {
+      "type": "object",
+      "required": ["theme_id", "label", "rank", "description", "why_it_matters", "key_insights", "watch_outs", "video_ids"],
+      "additionalProperties": false,
+      "properties": {
+        "theme_id": { "type": "string", "pattern": "^[a-z0-9_]+$", "description": "Identificatore stabile in snake_case. Univoco nel documento. Usabile come ancora URL. NON confrontabile fra corpus diversi: ogni corpus ha la sua tassonomia." },
+        "label": { "type": "string", "description": "Titolo leggibile del tema, in inglese come tutti i contenuti." },
+        "rank": { "type": "integer", "minimum": 1, "description": "Ordine editoriale di rilevanza, 1 = piu rilevante. Univoco e contiguo da 1 a N. NON e un punteggio: la distanza fra rank 3 e rank 4 non significa nulla." },
+        "description": { "type": "string", "description": "Cosa sostiene il tema nel corpus, incluso il meccanismo proposto." },
+        "why_it_matters": { "type": "string", "description": "Perche il tema interessa al lettore. Una o due frasi." },
+        "key_insights": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/themeInsight" } },
+        "watch_outs": { "type": "array", "description": "Distorsioni, errori e framing da scartare specifici del tema, in prosa. Gli errori in forma strutturata stanno in /known_errors_and_distortions.", "items": { "type": "string" } },
+        "video_ids": { "type": "array", "minItems": 1, "description": "Tutti i video che alimentano il tema. Un video puo comparire in piu temi: la relazione temi-video e molti-a-molti.", "items": { "$ref": "#/$defs/videoId" } }
+      }
+    },
+
+    "person": {
+      "$comment": "Introdotto in v2. Assente nel corpus Statrys, dove il parlante e sempre lo stesso conduttore e attribuire ogni osservazione a lui non aggiungerebbe informazione.",
+      "type": "object",
+      "required": ["name", "affiliation", "expertise_basis"],
+      "additionalProperties": false,
+      "properties": {
+        "name": { "type": "string", "description": "Nome come pronunciato o introdotto nell'episodio. I transcript sono automatici: diversi nomi sono storpiati o incompleti e il campo lo riflette, spesso con una nota fra parentesi. Puo valere 'unidentified speaker' nelle clip in cui nessuno viene nominato." },
+        "affiliation": { "type": ["string", "null"], "description": "Affiliazione come dichiarata nell'episodio. null quando non viene detta - il che e esso stesso un dato, perche impedisce all'ascoltatore di valutare gli interessi in gioco." },
+        "expertise_basis": { "type": ["string", "null"], "description": "Perche il suo giudizio pesa, secondo l'episodio stesso. Serve a distinguere l'esperto in campo proprio dall'esperto che sconfina. NOTA: questo campo riporta cio che l'episodio dichiara, non un giudizio esterno." },
+        "credibility_note": {
+          "$comment": "Introdotto in v2.1 e presente solo nel corpus Cyrus Janssen, dove la qualita degli ospiti varia enormemente e la distinzione decide quanto peso dare a una previsione. CONTIENE CONOSCENZA ESTERNA AI TRANSCRIPT - track record pubblico di previsioni, affiliazioni statali, assenza di credenziali dichiarate, o al contrario credenziali accademiche reali nel campo esatto discusso. Per questo ogni valore inizia con la stringa 'External to the transcript:', ed e obbligatorio mostrarlo nella UI marcato come valutazione esterna, distinto da expertise_basis. Non e mai negativo per default: dove l'ospite e uno specialista credenziato nel campo trattato, il campo lo dice.",
+          "type": ["string", "null"],
+          "description": "Opzionale (v2.1). Valutazione dell'affidabilita del parlante basata su conoscenza ESTERNA al transcript, sempre prefissata 'External to the transcript:'. null quando non c'e nulla di solido e pertinente da dire."
+        }
+      }
+    },
+
+    "videoObservation": {
+      "$comment": "L'unita atomica estratta dal transcript. E qui che vive la distribuzione riportata in /meta/reliability_distribution.",
+      "type": "object",
+      "required": ["observation", "supporting_data", "reliability", "reliability_note"],
+      "additionalProperties": false,
+      "properties": {
+        "observation": { "type": "string", "description": "Il punto sostanziale, ripulito dal framing sensazionalistico." },
+        "attributed_to": { "type": "string", "description": "Opzionale (v2). Chi ha fatto l'affermazione: nome dell'ospite, 'host', 'multiple' quando emerge dallo scambio, 'unidentified speaker' nelle clip. Nei corpus a voce singola il campo e assente, non vuoto." },
+        "claim_type": { "$ref": "#/$defs/claimType", "description": "Opzionale (v2)." },
+        "supporting_data": { "type": ["string", "null"], "description": "Cifre ed esempi portati a sostegno, in prosa. null quando l'osservazione e puramente argomentativa. Non e un campo numerico: non parsarlo, mostralo." },
+        "reliability": { "$ref": "#/$defs/reliability" },
+        "reliability_note": { "type": "string", "description": "Motivazione del giudizio e cosa verificare. Sempre presente." }
+      }
+    },
+
+    "figureCited": {
+      "$comment": "Le cifre cosi come pronunciate, senza normalizzazione. Sono deliberatamente stringhe: i corpus mescolano valute, unita e ordini di grandezza, e in piu casi documentati l'unita e sbagliata. Qualsiasi tentativo di trattarle come numeri e un errore.",
+      "type": "object",
+      "required": ["claim", "value", "attributed_source"],
+      "additionalProperties": false,
+      "properties": {
+        "claim": { "type": "string", "description": "A cosa si riferisce la cifra." },
+        "value": { "type": "string", "description": "Il valore come enunciato, con unita e valuta incluse nel testo." },
+        "attributed_source": { "type": ["string", "null"], "description": "Fonte nominata nell'episodio. null quando non ne viene citata nessuna. Questo campo e di per se un indicatore di qualita: dove la fonte c'e, l'affermazione e quasi sempre piu solida." }
+      }
+    },
+
+    "video": {
+      "$comment": "Il nome 'video' e ereditato dalla v1. In un corpus di podcast un record puo essere un episodio di tre ore o una clip di 40 secondi: la distinzione sta in `content_type`, e le clip vanno tenute fuori dalle statistiche sugli episodi.",
+      "type": "object",
+      "required": ["video_id", "title", "published_at", "file", "content_type", "primary_theme", "secondary_themes", "thesis", "key_observations", "figures_cited", "commercial_angle", "why_it_matters"],
+      "additionalProperties": false,
+      "properties": {
+        "video_id": { "$ref": "#/$defs/videoId" },
+        "title": { "type": "string", "description": "Titolo originale su YouTube, emoji e maiuscole comprese. Volutamente non ripulito: il titolo e esso stesso un dato, ed e spesso contraddetto dal contenuto - in entrambi i corpus ci sono casi documentati." },
+        "published_at": { "$ref": "#/$defs/isoDate" },
+        "file": { "type": "string", "description": "Nome del file .md di origine nella cartella padre (non un percorso)." },
+        "content_type": {
+          "type": "string",
+          "enum": ["analysis", "explainer", "promotional", "interview", "panel", "solo_commentary", "emergency_pod", "clip"],
+          "description": "Formato del contenuto. I primi tre valori vengono dalla v1 (canale monologante); interview/panel/emergency_pod/solo_commentary/clip sono stati aggiunti in v2 per i podcast. 'clip' identifica un estratto breve tagliato da un episodio piu lungo: ha 1-3 osservazioni per costruzione e non va contato insieme agli episodi."
+        },
+        "format_note": { "type": ["string", "null"], "description": "Opzionale (v2). Una riga sulla forma dell'episodio, es. 'due ospiti tecnici con un co-conduttore'." },
+        "hosts": { "type": "array", "items": { "type": "string" }, "description": "Opzionale (v2). Voci del canale. Puo essere vuoto - nelle clip di solito lo e." },
+        "guests": { "type": "array", "items": { "$ref": "#/$defs/person" }, "description": "Opzionale (v2). Ospiti dell'episodio. Puo essere vuoto per monologhi e panel interni." },
+        "primary_theme": {
+          "$comment": "TRAPPOLA, in entrambi i corpus. Questo campo e generato in fase di estrazione, video per video, da lettori che non condividevano un vocabolario. Nel corpus Statrys il risultato e 41 valori distinti su 42 video. Non e una chiave esterna verso themes[].theme_id e non va usato per raggruppare. Per la relazione tema-video usa themes[].video_ids.",
+          "type": "string", "pattern": "^[a-z0-9_]+$",
+          "description": "Etichetta tematica assegnata al singolo video in estrazione. NON allineata al vocabolario di /themes. Utile come tag descrittivo, inutile come dimensione di raggruppamento."
+        },
+        "secondary_themes": { "type": "array", "description": "Altri tag descrittivi, stessa avvertenza di primary_theme: vocabolario non controllato.", "items": { "type": "string", "pattern": "^[a-z0-9_]+$" } },
+        "thesis": { "type": "string", "description": "La tesi centrale in una o tre frasi. E la sintesi piu breve utilizzabile per una scheda compatta." },
+        "key_observations": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/videoObservation" } },
+        "contested_points": {
+          "$comment": "Introdotto in v2 e specifico del formato conversazione: registra dove i partecipanti hanno dissentito o dove il conduttore ha insistito senza che la questione si chiudesse. Un array vuoto e informativo, non mancante: significa che nessuno ha contraddetto nessuno per un'ora intera, che nei casi rilevati e un segnale di consenso della stanza.",
+          "type": "array", "items": { "type": "string" },
+          "description": "Opzionale (v2). Punti rimasti in disaccordo o irrisolti nell'episodio."
+        },
+        "figures_cited": { "type": "array", "items": { "$ref": "#/$defs/figureCited" } },
+        "commercial_angle": { "type": ["string", "null"], "description": "Conflitti di interesse osservabili: il funnel verso i servizi del canale in un corpus commerciale, oppure l'ospite che promuove il proprio libro, fondo o operato passato in un corpus di interviste. null quando non se ne osservano. Va mostrato: e il contesto che qualifica tutto il resto." },
+        "why_it_matters": { "type": "string", "description": "Rilevanza pratica in una o due frasi. In v1 questo campo si chiamava why_it_matters_for_business." }
+      }
+    }
+  },
+
+  "properties": {
+
+    "meta": {
+      "$comment": "Intestazione del documento. I conteggi qui sono derivati e vanno considerati autorevoli: sono calcolati sul contenuto effettivo, non dichiarati a mano.",
+      "type": "object",
+      "required": ["corpus_id", "title", "generated_at", "source_folder", "transcripts_in_folder", "transcripts_analysed", "excluded", "date_range", "themes", "observations_extracted", "reliability_distribution", "spot_checks_performed", "analyst_note"],
+      "additionalProperties": false,
+      "properties": {
+        "corpus_id": { "type": "string", "pattern": "^[a-z0-9_-]+$", "description": "Identificatore breve del corpus (es. 'statrys', 'chinatalk'). Serve a una UI che carichi piu file insieme per tenerli separati e per non mescolare statistiche fra generi diversi." },
+        "title": { "type": "string" },
+        "generated_at": { "$ref": "#/$defs/isoDate", "description": "Data di generazione dell'analisi, non dei contenuti." },
+        "source_folder": { "type": "string", "description": "Cartella Windows di origine. Percorso con backslash raddoppiati." },
+        "transcripts_in_folder": { "type": "integer", "description": "Quanti file c'erano in cartella, index compreso." },
+        "transcripts_analysed": { "type": "integer", "description": "Quanti sono entrati nell'analisi. Deve coincidere con la lunghezza di /videos." },
+        "excluded": { "type": "string", "description": "Cosa e stato escluso e perche. Le due politiche differiscono fra i corpus ed e dichiarato qui." },
+        "date_range": { "type": "object", "required": ["from", "to"], "additionalProperties": false, "description": "Copertura temporale, derivata da /videos.", "properties": { "from": { "$ref": "#/$defs/isoDate" }, "to": { "$ref": "#/$defs/isoDate" } } },
+        "themes": { "type": "integer", "description": "Numero di temi. Deve coincidere con la lunghezza di /themes." },
+        "observations_extracted": { "type": "integer", "description": "Totale delle key_observations su tutti i record." },
+        "episodes": { "type": "integer", "description": "Opzionale (v2). Record che non sono clip." },
+        "clips": { "type": "integer", "description": "Opzionale (v2). Record con content_type 'clip'." },
+        "contested_points_recorded": { "type": "integer", "description": "Opzionale (v2)." },
+        "records_with_no_disagreement": { "type": "integer", "description": "Opzionale (v2.1). Quanti record hanno contested_points vuoto. E una misura diretta del consenso della stanza e, nel corpus dove compare, meta dei record." },
+        "named_guests": { "type": "integer", "description": "Opzionale (v2). Ospiti distinti effettivamente nominati; deve coincidere con la lunghezza di /guest_index." },
+        "reliability_distribution": {
+          "$comment": "Le chiavi sono i valori dell'enum reliability. Le somme coprono le key_observations dei video, NON i key_insights dei temi. Non sommarle insieme.",
+          "type": "object", "additionalProperties": false,
+          "description": "Conteggio delle osservazioni per livello di affidabilita.",
+          "properties": { "verifiable": { "type": "integer" }, "plausible_unverified": { "type": "integer" }, "likely_exaggerated": { "type": "integer" }, "misleading_or_wrong": { "type": "integer" } }
+        },
+        "claim_type_distribution": {
+          "type": "object", "additionalProperties": false,
+          "description": "Opzionale (v2). Conteggio per tipo di affermazione. Presente solo dove l'asse e stato applicato, ed e li la statistica piu informativa delle due.",
+          "properties": { "empirical": { "type": "integer" }, "forecast": { "type": "integer" }, "interpretation": { "type": "integer" }, "recommendation": { "type": "integer" }, "anecdote": { "type": "integer" } }
+        },
+        "spot_checks_performed": { "type": "string", "description": "Che verifica indipendente e stata fatta dopo l'estrazione, e con quale esito. Le due politiche differiscono fra i corpus: leggerlo prima di confrontarli." },
+        "analyst_note": { "type": "string", "description": "Avvertenza di lettura, inclusi i limiti dichiarati dell'analisi. Va mostrata in testa alla pagina, non nascosta in un tooltip." }
+      }
+    },
+
+    "source_assessment": {
+      "$comment": "La valutazione della fonte. E il pezzo che impedisce di leggere il resto come se fosse neutro. Trattarlo come contenuto di prima classe, non come nota a pie di pagina.",
+      "type": "object",
+      "required": ["channel", "channel_id", "what_it_is", "host_credential_claimed", "structural_bias", "where_it_is_genuinely_good", "how_to_use_it"],
+      "additionalProperties": false,
+      "properties": {
+        "channel": { "type": "string" },
+        "channel_id": { "type": "string", "description": "ID canale YouTube, coincide col nome della cartella di origine." },
+        "what_it_is": { "type": "string", "description": "Cos'e il canale e quale interesse ha - cioe in che direzione ci si aspetta la distorsione. In v1 il campo si chiamava what_it_sells." },
+        "host_credential_claimed": { "type": "string", "description": "Le credenziali dichiarate, con nota sul fatto che non sono verificate. Puo dire esplicitamente che non ne vengono rivendicate." },
+        "structural_bias": { "type": "array", "items": { "type": "string" }, "description": "I pattern di distorsione ricorrenti, uno per elemento." },
+        "where_it_is_genuinely_good": { "type": "array", "items": { "type": "string" }, "description": "Dove la fonte e effettivamente affidabile. Presente per evitare che la valutazione critica scada in liquidazione." },
+        "how_to_use_it": { "type": "string", "description": "La regola d'uso in una o due frasi." }
+      }
+    },
+
+    "reliability_scale": {
+      "$comment": "Dizionario dei quattro livelli. Le chiavi corrispondono esattamente all'enum reliability: usarlo per generare legenda e tooltip invece di riscrivere le definizioni a mano. Le definizioni sono calibrate sul genere del corpus e differiscono leggermente fra i file: e voluto, ed e la ragione per cui vanno lette dal file e non dal codice.",
+      "type": "object",
+      "required": ["verifiable", "plausible_unverified", "likely_exaggerated", "misleading_or_wrong"],
+      "additionalProperties": false,
+      "properties": { "verifiable": { "type": "string" }, "plausible_unverified": { "type": "string" }, "likely_exaggerated": { "type": "string" }, "misleading_or_wrong": { "type": "string" } }
+    },
+
+    "claim_type_scale": {
+      "type": "object",
+      "required": ["empirical", "forecast", "interpretation", "recommendation", "anecdote"],
+      "additionalProperties": false,
+      "description": "Opzionale (v2). Dizionario dei tipi di affermazione. Presente solo dove l'asse claim_type e stato applicato; se manca, non mostrare il filtro corrispondente.",
+      "properties": { "empirical": { "type": "string" }, "forecast": { "type": "string" }, "interpretation": { "type": "string" }, "recommendation": { "type": "string" }, "anecdote": { "type": "string" } }
+    },
+
+    "themes": {
+      "$comment": "Gia ordinato per rank crescente nel file. Non riordinare per label salvo richiesta esplicita: l'ordine e editoriale.",
+      "type": "array", "minItems": 1,
+      "description": "I temi trasversali. Relazione molti-a-molti con /videos.",
+      "items": { "$ref": "#/$defs/theme" }
+    },
+
+    "verify_before_using": {
+      "$comment": "Coda di verifica: cosa controllare prima di far entrare un dato in un modello o in un documento.",
+      "type": "array",
+      "description": "Affermazioni ad alto impatto e bassa verificabilita, selezionate perche se cadono cade una tesi.",
+      "items": {
+        "type": "object", "required": ["claim", "why", "video"], "additionalProperties": false,
+        "properties": {
+          "claim": { "type": "string", "description": "L'affermazione da verificare." },
+          "why": { "type": "string", "description": "Cosa dipende da questa affermazione." },
+          "video": { "$ref": "#/$defs/videoId", "description": "Video di provenienza. Singolo, non un array." }
+        }
+      }
+    },
+
+    "known_errors_and_distortions": {
+      "$comment": "Errori gia accertati, non sospetti. Distinti dai watch_outs dei temi perche qui sono strutturati e collegati a un video singolo. Diversi sono contraddizioni interne al singolo episodio, quindi autoevidenti nel transcript.",
+      "type": "array",
+      "description": "Errori fattuali e distorsioni verificate nel corpus.",
+      "items": {
+        "type": "object", "required": ["error", "video"], "additionalProperties": false,
+        "properties": {
+          "error": { "type": "string", "description": "L'errore e, dove utile, la correzione." },
+          "video": { "$ref": "#/$defs/videoId" }
+        }
+      }
+    },
+
+    "guest_index": {
+      "$comment": "Introdotto in v2 e derivato da videos[].guests: e un indice, non una fonte. Utile come seconda porta di navigazione in un corpus di interviste. I nomi vengono da transcript automatici e alcuni sono storpiati; l'indice li riporta come sono, senza normalizzare, per non inventare identita.",
+      "type": "array",
+      "description": "Opzionale (v2). Roster degli ospiti nominati, ordinato per numero di apparizioni decrescente.",
+      "items": {
+        "type": "object", "required": ["name", "appearances", "video_ids", "affiliation", "expertise_basis"], "additionalProperties": false,
+        "properties": {
+          "name": { "type": "string" },
+          "appearances": { "type": "integer", "minimum": 1, "description": "Numero di record distinti in cui compare - episodi e clip insieme, quindi un ospite puo apparire piu volte grazie a estratti dello stesso episodio." },
+          "video_ids": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/videoId" } },
+          "affiliation": { "type": ["string", "null"] },
+          "expertise_basis": { "type": ["string", "null"] },
+          "credibility_note": { "type": ["string", "null"], "description": "Opzionale (v2.1). Copia della credibility_note dell'ospite, propagata qui per rendere l'indice utilizzabile da solo. Vale la stessa avvertenza: e conoscenza ESTERNA ai transcript e va mostrata marcata come tale." }
+        }
+      }
+    },
+
+    "videos": {
+      "$comment": "Ordinato per published_at crescente nel file. Ogni video_id compare una sola volta: usabile direttamente come mappa id -> record.",
+      "type": "array", "minItems": 1,
+      "description": "Le schede per singolo transcript.",
+      "items": { "$ref": "#/$defs/video" }
+    },
+
+    "videos_not_in_any_theme": {
+      "$comment": "Campo opzionale: presente solo se qualche record resta fuori da tutti i temi. Serve a rendere esplicita la copertura invece di lasciare un buco silenzioso.",
+      "type": "array",
+      "description": "Record analizzati ma non assegnati ad alcun tema, con la motivazione.",
+      "items": {
+        "type": "object", "required": ["video_id", "title", "reason"], "additionalProperties": false,
+        "properties": { "video_id": { "$ref": "#/$defs/videoId" }, "title": { "type": "string" }, "reason": { "type": "string" } }
+      }
+    }
+  }
+}

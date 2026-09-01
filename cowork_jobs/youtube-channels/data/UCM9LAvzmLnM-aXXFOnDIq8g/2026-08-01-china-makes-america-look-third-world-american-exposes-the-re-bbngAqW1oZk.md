@@ -1,0 +1,71 @@
+---
+source: youtube
+videoId: bbngAqW1oZk
+url: https://www.youtube.com/watch?v=bbngAqW1oZk
+lang: en
+segments: 405
+fetchedAt: 2026-09-01T10:50:50.466Z
+title: "China Makes America Look Third World! American EXPOSES The Reality"
+channel: "global impulse"
+publishedAt: 2026-08-01T11:02:32Z
+---
+
+# China Makes America Look Third World! American EXPOSES The Reality
+
+[Apri su YouTube](https://www.youtube.com/watch?v=bbngAqW1oZk)
+
+The quality of my lifestyle in China is much better than the quality of life I had living in the US. I only pay $278 a month for my apartment. I feel completely safe as a woman, as a [music] woman of color. I have free health care insurance. When I tell them how modern the cities are, people are shocked. >> Hey guys, you've heard me say it before. Some parts of the world are moving into the future while others feel like they're stuck in the past.
+
+Today we're reacting to Elise Lightyear. She's a former New Yorker who traded 70-hour work weeks and paycheck-to-paycheck living for a life in Chengdu, China. She's going to show you her three-bedroom apartment, her 28-cent commute, and why her $30,000 salary makes her feel like royalty. If you're one of those people that still thinks China is underdeveloped, this video is about to be a serious reality check. Let's dive in. >> For the typical American, there is a lot of confusion about what life is truly like in China.
+
+When I tell them how modern the cities are, people are shocked. When I tell them about how low the prices are, people are shocked. Less than $4 US for a Michelin-recommended meal. The quality of my lifestyle in China is much better than the quality of life I had living in the US. >> Many Westerners still view China through a lens stuck in the 1980s. When I decided to come to China, some friends literally told me, "But China's so poor and polluted.
+
+You're going to get your organs harvested." But the reality, China is miles ahead of the West. Even the fourth-tier cities in China make America look third world. We're talking about high-speed rail, 5G everywhere, and infrastructure that actually works, compared to the crumbling bridges and potholes back in the US. >> My name is Elise Lightyear. I'm 35 years old, and I moved to China in 2019. >> I moved to New York City and lived there for 10 years.
+
+>> Yeah, I was working in reality TV production. I was tired of working 70 hours a week for 10 years being in my 20s. I felt like a 50-year-old woman. I was exhausted. I was living check to check, which sucked. >> The funny thing is, I know so many people in the exact same boat as she was in, but they are terrified to make the jump. On paper, it might look like they earn a lot in New York or LA, but their expenses are so astronomically high that they are functionally broke.
+
+Now, according to Bank of America Institute data, nearly 24% of US households were living paycheck to paycheck in 2025. And it gets worse. According to the US Bureau of Labor Statistics, 9.3 million Americans were working multiple jobs in November of 2025, the highest number ever recorded since BLS began tracking in 1994. That's not hustle culture. That's survival. A separate McKnight survey found that 53% of American workers say they work two jobs just to cover their basic expenses.
+
+And Bloomberg reported in 2026 that 54 million Americans now earn income from more than one source, up from 41 million in 2024. So, Elise wasn't grinding 70 hours a week because she was ambitious. Well, maybe she was, but she was mainly doing it because the system left her no choice. You know, I have friends and family earning way more than I do in America, but they aren't enjoying anywhere near the same quality of life. >> One day I just woke up and it just clicked that this is not the life that I want for myself.
+
+I came up with this idea that I wanted to leave New York. I moved to Beijing in 2019 and lived and taught there for 4 years. Then in 2023, I moved to Chengdu and have been in Chengdu ever since. Chengdu is maybe a place you've never heard of, but it is actually one of the biggest cities. Chengdu has a population of over 20 million people, including myself. Currently, I'm a university teacher and I work a total of 18 hours a week, 4 days a week, and I teach freshman first-year [music] university students who already speak English, and I teach them [music] essay writing.
+
+I take the subway every single day to work. It's really easy to navigate. All of the signs are in English and Chinese. All of the announcements are in English and Chinese, so it's foolproof. This round-trip subway trip cost me 2 yuan, which is 28 US cents. My current yearly salary in China is $30,000. $30,000 a year is poverty in America. But in China, I'm living large. I am upper middle class. >> Let's talk about the subway for a second.
+
+Now, Chengdu's metro system has over 700 km of track and 17 lines. Almost all of it was built in the last 15 years. Now, let's compare that to the New York City Subway, which is over 100 years old, constantly delayed, and frequently floods. It's a literal past versus future comparison. And her $30,000 salary? In America, that's poverty, as she points out. But in Chengdu, it buys an upper middle class lifestyle. And remember, Chengdu is a massive tier one city, or new tier one city, with 21 million people.
+
+It's not some cheap rural village. The cost of living in Chengdu is roughly 84% lower than in New York City. And this isn't just an expat bubble, either. This affordability is a reality for the average Chinese citizen, as well. The average net monthly salary in China is somewhere around $1,200. That sounds low on paper. When you factor in that a decent one-bedroom apartment in Chengdu costs about $280, maybe $400 max, a month, a full meal costs between $1 and $3, and public transport is a fraction of a dollar, that salary goes extraordinarily far.
+
+Now, according to Visual Capitalist's 2026 analysis, China has drastically lower prices for most daily goods and services. We're talking about basic utilities, internet, and food are all a fraction of what they cost in the US. The affordability isn't a trick of exchange rates for foreigners. It is baked into the entire cost structure of the economy. A Chinese teacher, a local factory worker, and a foreign English teacher are all benefiting from the same low-cost infrastructure. >> For my three-bedroom apartment with a balcony located downtown Chengdu, just a 5-minute walk from the subway, my rent is $556 per month, but my job pays half of that as a benefit.
+
+Which means I only pay $278 a month for my apartment. Welcome to my apartment here in Chengdu, China. None of this furniture in the apartment actually belongs to me. It belongs to my landlord. This is my living room. I love my living room. It's super cozy. I have this huge sectional couch that I just come to lay on. >> You heard that, right? Her school gives her a housing subsidy that covers half her rent. Many schools in China actually pay for the entire rent, or they provide a free apartment outright.
+
+Now, contrast this to American corporate overlords. In the US, only about 4 to 13% of employers offer any kind of housing assistance, and it's usually reserved for executives or very specific location packages. In China, being treated like a human being who needs a place to live is standard practice for international teachers. >> all of the time. Bought myself a projector. [music] I've got Netflix, HBO Max, Hulu, all of the channels. This is my balcony. That [music] rarely gets used because it's either raining, super humid, or 97 degrees.
+
+>> [music] >> This is my bathroom. It's small, but it's effective. This is my wardrobe room. This is the third bedroom, but there's no bed. So, [music] I've turned it into my wardrobe closet get ready space. My second bedroom. >> [laughter] >> I didn't paint it. It came like this. [music] And this is the master bedroom. This is it. >> [music] >> Let me show you the kitchen. >> [music] >> So, here it is. It's pretty small, but I'm just one person and it works [music] perfect for me.
+
+>> So, let me remind you again. She is paying $278 out of pocket for a three-bedroom apartment downtown. The average rent for a three-bedroom apartment in New York City right now is over $7,000 a month. The shoebox in America costs 10 times more than the balcony apartment in China. Let that sink in. And the landlords actually fix things here. So, I had a pipe leak fairly recently in my apartment and within 2 hours the landlord had a guy there to fix it.
+
+Now, to be honest with you, he did leave a bit of a mess, but the leak was fixed the same day. Try getting a New York slumlord to even pick up the phone in under a week. >> This is where I do my laundry. This is my washer. My apartment came with this really cool built-in feature where I can hang my clothes on this hanging line that again is perfect for shorties like me. Being an international teacher at my school is I have free health care insurance.
+
+My job gives me I think it's like $15 a month for subway fare. Um in addition, every year my job gives me a flight allowance and that comes to $1,200. >> Imagine that. Free health care, commuter stipends, a $1,200 annual flight allowance just to go on vacation or visit home. Let's put each of these in context because in the West, these are executive-level perks if they exist at all. On healthcare, in America, the average annual premium for employer-sponsored family health coverage hit $26,993 in 2025, a 6% increase in a single year.
+
+And that's just the premium. The average deductible on top of that is another 1,500 to 3,000 dollars before your insurance actually kicks in. Elise's employer in China covers her healthcare entirely, zero premiums, zero deductibles. A $1,200 annual flight allowance to visit home or go on vacation simply does not exist as a standard employment package anywhere in the American job market. You're lucky if your employer matches your 401k at 3%. The contrast in how workers are valued is not subtle.
+
+It's structural. >> Each month, I think I spend approximately $75 on groceries. I have four bags of groceries, mostly produce and a bottle of sesame oil. Total, $9.04. [music] It's really easy to make friends with local people. I have a lot of local friends that I cherish and have taught me so much about their culture, and I also have a lot of expat [music] friends. Why me, ma? Oh, huh. Okay. Aside from being a university teacher, I'm also a YouTuber, content creator, and with both of those salaries combined, the maximum amount I am able to [music] save is up to $1,000 every month.
+
+>> So, she bought four bags of fresh produce for $9. The average American family is spending over $1,000 a month in groceries right now. But, probably the most impressive thing is a savings. She is saving $1,000 a month on a $30,000 salary. The US personal savings rate recently dropped to 3.5%. Most Americans couldn't cover a $400 emergency, let alone put away a grand every single month. She went from living paycheck to paycheck in New York to building actual wealth in Chengdu, China.
+
+>> So, when it comes [music] to eating out, it really depends on where I'm going. If I'm going to [snorts] Cheesecake Factory, then I'm spending US Cheesecake Factory money, $60 for a meal. But, if I'm eating local and going to my neighborhood noodle spot, I'm spending $2 on a bowl of noodles. In a month, I'm spending about $150 eating out. >> $150 a month eating out. The average American spends over $330 a month at restaurants. And that buys you maybe a few trips to a mid-tier chain or some fast food.
+
+In China, $2 gets you a fresh hand-pulled bowl of noodles that tastes better than a $30 meal in the States. The quality of life you get for your dollar here is just on another level. >> I feel completely safe as a woman, as a woman of color. [music] I just feel very at ease in this country. Overall crime in this country is [music] is is quite low. Some of the challenges I face in China is just simply being different.
+
+China is a homogeneous country, so I stick out like a sore thumb. I cannot go a day being outside without someone pointing at me and saying in Chinese, "Look, there's a black person. Look, there's a foreigner." >> I want every woman watching to pay attention to this because Alyse just said something millions of women in the West simply cannot say. She feels safe walking alone at night. Let's look at the global reality check. Gallup safety survey found that 45% of American women do not feel safe walking alone at night near their own home.
+
+In the US, the leader of the free world, nearly half of all women live in fear of their own neighborhood. China, by contrast, it ranks third in the world for nighttime safety. The US ranks 64th. And for a woman of color, the calculus is even more extreme. In 2025 alone, 264 African Americans were fatally shot by police. In China, there is no equivalent systemic threat. None. Alyse is a woman of color living in a city of 20 million people, and her biggest safety concern is that people stare at her in the subway.
+
+But back in America, she'd probably have to worry about being a statistic. >> With all the money I've saved in China, I plan on buying a house not in the US because can't afford that. I haven't saved enough money to buy a house in the US, but >> [music] >> I have saved enough money to pay off a lot of my student loans, >> [music] >> and I think I've saved enough money to buy a little casita on the beach in Mexico.
+
+[music] Fingers crossed, that is the plan. >> It's wild, right? Alyse's story is becoming more common everyday. When you look at the math, saving a thousand dollars a month on a teacher's salary while living in a luxury apartment, it really makes you question the American dream versus the global reality. China isn't just catching up in terms of lifestyle efficiency and safety. They've already moved the goal post. But what do you think? Is the lower cost of living worth the fish bowl feeling of being a foreigner or is a trade off a no-brainer?
+
+Let me know in the comments. If you got any value from this, don't forget to like and subscribe and please share with a friend. As usual guys, thanks for watching. And until next time. Bye.
